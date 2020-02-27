@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(baseballr)
+library(tidyverse)
 ```
 
 ## R Markdown
@@ -15,16 +17,44 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+```{r gather}
+
+# function to generate list of needed dates, given start and end
+
+date_list <- function(start, end) {
+  seq(as.Date(start), as.Date(end), by = "days")
+}
+
+# uses start and end dates of 2015-2019 MLB seasons to get lists of dates
+
+dates_2015 <- date_list("2015-04-05", "2015-10-04")
+dates_2016 <- date_list("2016-04-03", "2016-10-02")
+dates_2017 <- date_list("2017-04-02", "2017-10-01")
+dates_2018 <- date_list("2018-03-29", "2018-10-01")
+dates_2019 <- date_list("2019-03-28", "2019-09-29")
+
+# could just scrape data from start date to end date
+# but we want the data to be in order of date played and ordered within game
+# so instead we write a function to get data for each date
+# and within that function we reorder the data by inning for each game
+# with some help from Andy Price's fall 2019 project (GitHub below)
+# https://github.com/andyprice2/final_project/blob/master/scraping_statcast.R
+# TF also helped develop the code to group by game
+
+scrape_day <- function(day) {
+  scraped <- scrape_statcast_savant(start_date = date, end_date = date, 
+                         player_type = "pitcher")
+  
+  mod_vector <- vector()
+  for(i in 1:length(sort(unique(scraped$game_pk)))) {
+    game <- scraped[scraped$game_pk == sort(unique(scraped$game_pk))[i], ]
+    mod_vector <- rbind(mod_vector, game)
+  }
+  
+  scraped <- as.data.frame(mod_vector)
+  return(map_df(scraped, rev))
+  
+}
+
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
