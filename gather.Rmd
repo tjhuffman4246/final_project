@@ -41,7 +41,7 @@ dates_2019 <- date_list("2019-03-28", "2019-09-29")
 # https://github.com/andyprice2/final_project/blob/master/scraping_statcast.R
 # TF also helped develop the code to group by game
 
-scrape_day <- function(day) {
+scrape_day <- function(date) {
   scraped <- scrape_statcast_savant(start_date = date, end_date = date, 
                          player_type = "pitcher")
   
@@ -55,6 +55,18 @@ scrape_day <- function(day) {
   return(map_df(scraped, rev))
   
 }
+
+# uses dates and scraping functions to get yearly data
+
+data_2015 <- map_dfr(dates_2015, scrape_day)
+data_2016 <- map_dfr(dates_2016, scrape_day)
+data_2017 <- map_dfr(dates_2017, scrape_day)
+data_2018 <- map_dfr(dates_2018, scrape_day)
+data_2019 <- map_dfr(dates_2019, scrape_day)
+
+# combines into single dataframe
+
+total_data <- bind_rows(data_2015, data_2016, data_2017, data_2018, data_2019)
 
 ```
 
