@@ -68,6 +68,7 @@ write_and_remove <- function(data) {
 }
 
 # uses dates and scraping functions to get yearly data
+# used Git LFS to upload these files
 
 data_2015 <- map_dfr(dates_2015, scrape_day)
 write_and_remove(data_2015)
