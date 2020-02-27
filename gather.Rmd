@@ -59,12 +59,13 @@ scrape_day <- function(date) {
 # function to get yearly data, write to csv, and then remove from envmt.
 # saves processing power - had difficulty collecting all the data
 # "year" line creates a string that extracts name of the passed-in dataframe
+# sets environment to .GlobalEnv when removing file to ensure it's removed
 
 write_and_remove <- function(data) {
   var <- ".csv"
   year <- deparse(substitute(data))
   write_csv(data, path = paste0("data/", paste0(year, var)))
-  rm(data)
+  rm(list = data, envir = .GlobalEnv)
 }
 
 # uses dates and scraping functions to get yearly data
