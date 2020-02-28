@@ -9,22 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## About
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+There's more data in baseball than ever now. Whether you're interested in the probability a Mike Trout line drive will fall for a hit, the top speed Ronald Acuña Jr. reaches going from first to third, or the precise arm slot at which Josh Hader releases each fastball, these measurements are all available at quite literally the push of a button. Yet with the game becoming viewed by many as a series of sequences and estimations, there remain questions about what hasn't yet been quantified. Some of it is, of course, not truly measurable - one can't reduce a great teammate's impact on the clubhouse to fractions of a win or assess how many points of stolen base percentage a savvy first-base coach might add - but there's still room to improve analysis in certain areas. One of these is pitch sequencing.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+--
