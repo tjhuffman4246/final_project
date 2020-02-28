@@ -1,7 +1,7 @@
 ---
 title: "Gather"
 author: "Tate Huffman"
-date: "2/26/2020"
+date: "2/28/2020"
 output: html_document
 ---
 
@@ -65,7 +65,7 @@ write_and_remove <- function(data) {
   var <- ".csv"
   year <- deparse(substitute(data))
   write_csv(data, path = paste0("data/", paste0(year, var)))
-  rm(deparse(substitute(data)), envir = .GlobalEnv)
+  rm(list = as.character(substitute(data)), envir = .GlobalEnv)
 }
 
 # uses dates and scraping functions to get yearly data
@@ -86,6 +86,9 @@ write_and_remove(data_2018)
 data_2019 <- map_dfr(dates_2019, scrape_day)
 write_and_remove(data_2019)
 
+##########
+# TO DO: read files back in and combine into single dataframe
+##########
 # combines into single dataframe
 # comments out prev. functionality below
 # total_data <- bind_rows(data_2015, data_2016, data_2017, data_2018, data_2019)
