@@ -65,7 +65,7 @@ write_and_remove <- function(data) {
   var <- ".csv"
   year <- deparse(substitute(data))
   write_csv(data, path = paste0("data/", paste0(year, var)))
-  rm(list = data, envir = .GlobalEnv)
+  rm(deparse(substitute(data)), envir = .GlobalEnv)
 }
 
 # uses dates and scraping functions to get yearly data
