@@ -11,13 +11,13 @@ library(baseballr)
 library(tidyverse)
 ```
 
-## R Markdown
+## Gather
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data necessary is in my [GitHub repository](https://github.com/tjhuffman4246/finalproject_initial) for this project.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r gather, eval = FALSE}
 
-```{r gather}
+# code chunk setting prevents this code from actually running, given its length
 
 # function to generate list of needed dates, given start and end
 
@@ -70,6 +70,8 @@ write_and_remove <- function(data) {
 
 # uses dates and scraping functions to get yearly data
 # used Git LFS to upload these files
+# because of processing issues we have to get data for each year...
+# write it as a csv, and then read that csv file back in
 
 data_2015 <- map_dfr(dates_2015, scrape_day)
 write_and_remove(data_2015)
@@ -86,12 +88,16 @@ write_and_remove(data_2018)
 data_2019 <- map_dfr(dates_2019, scrape_day)
 write_and_remove(data_2019)
 
-##########
-# TO DO: read files back in and combine into single dataframe
-##########
-# combines into single dataframe
-# comments out prev. functionality below
-# total_data <- bind_rows(data_2015, data_2016, data_2017, data_2018, data_2019)
+# creates function to load in these files, via below Stack Overflow thread:
+# https://stackoverflow.com/questions/23190280/
+# whats-wrong-with-my-function-to-load-multiple-csv-files-into-single-dataframe
+
+load_files <- function(path) { 
+  files <- dir(path, pattern = "data_\\d{4}.csv", full.names = TRUE)
+  bind_rows(map_df(files, read_csv))
+}
+
+pitches <- load_files("data")
 
 ```
 
