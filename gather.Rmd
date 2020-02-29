@@ -11,13 +11,14 @@ library(baseballr)
 library(tidyverse)
 ```
 
-## Gather
+## Code
 
-Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data necessary is in my [GitHub repository](https://github.com/tjhuffman4246/finalproject_initial) for this project.
+Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data output is in the [GitHub repository](https://github.com/tjhuffman4246/finalproject_initial) created for this project.
 
 ```{r gather, eval = FALSE}
 
 # code chunk setting prevents this code from actually running, given its length
+# remove "eval = FALSE" if you want to run this code
 
 # function to generate list of needed dates, given start and end
 
@@ -97,6 +98,7 @@ load_files <- function(path) {
   bind_rows(map_df(files, read_csv))
 }
 
+# loads in all files in this directory and combines into single dataframe
 pitches <- load_files("data")
 
 ```

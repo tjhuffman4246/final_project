@@ -382,10 +382,11 @@ summary {
 </div>
 
 
-<div id="gather" class="section level2">
-<h2>Gather</h2>
-<p>Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data necessary is in my <a href="https://github.com/tjhuffman4246/finalproject_initial">GitHub repository</a> for this project.</p>
+<div id="code" class="section level2">
+<h2>Code</h2>
+<p>Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data output is in the <a href="https://github.com/tjhuffman4246/finalproject_initial">GitHub repository</a> created for this project.</p>
 <pre class="r"><code># code chunk setting prevents this code from actually running, given its length
+# remove &quot;eval = FALSE&quot; if you want to run this code
 
 # function to generate list of needed dates, given start and end
 
@@ -465,6 +466,7 @@ load_files &lt;- function(path) {
   bind_rows(map_df(files, read_csv))
 }
 
+# loads in all files in this directory and combines into single dataframe
 pitches &lt;- load_files(&quot;data&quot;)</code></pre>
 </div>
 
