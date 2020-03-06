@@ -1,0 +1,13 @@
+---
+title: "Explore"
+author: "Tate Huffman"
+date: "3/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Looking at Our Data
+
