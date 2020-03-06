@@ -1,7 +1,7 @@
 ---
 title: "About"
 author: "Tate Huffman"
-date: "2/28/2020"
+date: "3/06/2020"
 output: html_document
 ---
 
@@ -21,4 +21,4 @@ As of right now, I believe this will be the only data source required for this p
 My name is Tate Huffman, and I'm a junior at Harvard College studying Applied Mathematics and Economics with a secondary in Statistics. I row on the men's lightweight crew team, and I'm a member of the Harvard Sports Analysis Collective.
 
 #### [Email](mailto:thuffman@college.harvard.edu)
-#### [Link to GitHub Repository](https://github.com/tjhuffman4246/finalproject_initial)
+#### [Link to GitHub Repository](https://github.com/tjhuffman4246/final_project)

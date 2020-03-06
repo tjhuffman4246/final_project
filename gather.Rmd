@@ -1,7 +1,7 @@
 ---
 title: "Gather"
 author: "Tate Huffman"
-date: "2/28/2020"
+date: "3/06/2020"
 output: html_document
 ---
 
@@ -13,7 +13,7 @@ library(tidyverse)
 
 ## Code
 
-Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data output is in the [GitHub repository](https://github.com/tjhuffman4246/finalproject_initial) created for this project.
+Below is code written to gather five years of Baseball Savant data. It takes a long time to run, but the data output is in the [GitHub repository](https://github.com/tjhuffman4246/final_project) created for this project.
 
 ```{r gather, eval = FALSE}
 
