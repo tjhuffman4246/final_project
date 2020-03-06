@@ -1,7 +1,7 @@
 ---
 title: "Explore"
 author: "Tate Huffman"
-date: "3/6/2020"
+date: "3/06/2020"
 output: html_document
 ---
 
