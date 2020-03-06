@@ -6,8 +6,54 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(include = FALSE)
+library(baseballr)
+library(lubridate)
+library(gt)
+library(tidyverse)
 ```
 
 ## Looking at Our Data
 
+```{r load_info}
+
+# replicating function from gather.Rmd to load in data
+# creates function to load in these files, via below Stack Overflow thread:
+# https://stackoverflow.com/questions/23190280/
+# whats-wrong-with-my-function-to-load-multiple-csv-files-into-single-dataframe
+
+load_files <- function(path) { 
+  files <- dir(path, pattern = "data_\\d{4}.csv", full.names = TRUE)
+  bind_rows(map_df(files, read_csv))
+}
+
+# loads in all files in this directory and combines into single dataframe
+
+pitches <- load_files("data")
+
+```
+
+We replicate some of the code from previous work in order to load in the multiple gigabytes of pitch data we've gathered since the start of the 2015 season. Let's explore how league-wide pitch distributions have evolved over the past five years.
+
+```{r exploration, include = TRUE, echo = FALSE}
+
+# looking at how the percent of different pitches has evolved over time
+# let's first get the number of pitches in a given year into a new tibble
+
+yearly_npitch <- pitches %>% 
+  group_by(year(game_date)) %>% 
+  summarize(count = n()) %>% 
+  rename(year = "year(game_date)")
+
+# for-loop iterates over each year and gets pitch distribution for each year
+
+for (yr in 2015:2019) {
+  pitches %>%
+    filter(year(game_date) == yr) %>% 
+    group_by(pitch_name) %>% 
+    summarize(percent = n() / pull(filter(yearly_npitch, year == yr), count)) %>%
+    arrange(desc(percent)) %>% 
+    gt()
+} 
+
+```
