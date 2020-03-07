@@ -385,6 +385,585 @@ summary {
 <div id="looking-at-our-data" class="section level2">
 <h2>Looking at Our Data</h2>
 <p>We replicate some of the code from previous work in order to load in the multiple gigabytes of pitch data we’ve gathered since the start of the 2015 season. Let’s explore how league-wide pitch distributions have evolved over the past five years.</p>
+<pre><code>## Warning in if ((loc$groups %&gt;% rlang::eval_tidy()) == &quot;title&quot;) {: the condition
+## has length &gt; 1 and only the first element will be used</code></pre>
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#tvwtalaume .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  /* table.margin.left */
+  margin-right: auto;
+  /* table.margin.right */
+  color: #333333;
+  font-size: 16px;
+  /* table.font.size */
+  background-color: #FFFFFF;
+  /* table.background.color */
+  width: auto;
+  /* table.width */
+  border-top-style: solid;
+  /* table.border.top.style */
+  border-top-width: 2px;
+  /* table.border.top.width */
+  border-top-color: #A8A8A8;
+  /* table.border.top.color */
+  border-bottom-style: solid;
+  /* table.border.bottom.style */
+  border-bottom-width: 2px;
+  /* table.border.bottom.width */
+  border-bottom-color: #A8A8A8;
+  /* table.border.bottom.color */
+}
+
+#tvwtalaume .gt_heading {
+  background-color: #FFFFFF;
+  /* heading.background.color */
+  border-bottom-color: #FFFFFF;
+  /* table.background.color */
+  border-left-style: hidden;
+  /* heading.border.lr.style */
+  border-left-width: 1px;
+  /* heading.border.lr.width */
+  border-left-color: #D3D3D3;
+  /* heading.border.lr.color */
+  border-right-style: hidden;
+  /* heading.border.lr.style */
+  border-right-width: 1px;
+  /* heading.border.lr.width */
+  border-right-color: #D3D3D3;
+  /* heading.border.lr.color */
+}
+
+#tvwtalaume .gt_title {
+  color: #333333;
+  font-size: 125%;
+  /* heading.title.font.size */
+  font-weight: initial;
+  /* heading.title.font.weight */
+  padding-top: 4px;
+  /* heading.top.padding - not yet used */
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  /* table.background.color */
+  border-bottom-width: 0;
+}
+
+#tvwtalaume .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  /* heading.subtitle.font.size */
+  font-weight: initial;
+  /* heading.subtitle.font.weight */
+  padding-top: 0;
+  padding-bottom: 4px;
+  /* heading.bottom.padding - not yet used */
+  border-top-color: #FFFFFF;
+  /* table.background.color */
+  border-top-width: 0;
+}
+
+#tvwtalaume .gt_bottom_border {
+  border-bottom-style: solid;
+  /* heading.border.bottom.style */
+  border-bottom-width: 2px;
+  /* heading.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* heading.border.bottom.color */
+}
+
+#tvwtalaume .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#tvwtalaume .gt_col_headings {
+  border-top-style: solid;
+  /* column_labels.border.top.style */
+  border-top-width: 2px;
+  /* column_labels.border.top.width */
+  border-top-color: #D3D3D3;
+  /* column_labels.border.top.color */
+  border-bottom-style: solid;
+  /* column_labels.border.bottom.style */
+  border-bottom-width: 2px;
+  /* column_labels.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* column_labels.border.bottom.color */
+  border-left-style: none;
+  /* column_labels.border.lr.style */
+  border-left-width: 1px;
+  /* column_labels.border.lr.width */
+  border-left-color: #D3D3D3;
+  /* column_labels.border.lr.color */
+  border-right-style: none;
+  /* column_labels.border.lr.style */
+  border-right-width: 1px;
+  /* column_labels.border.lr.width */
+  border-right-color: #D3D3D3;
+  /* column_labels.border.lr.color */
+}
+
+#tvwtalaume .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  /* column_labels.background.color */
+  font-size: 100%;
+  /* column_labels.font.size */
+  font-weight: normal;
+  /* column_labels.font.weight */
+  text-transform: inherit;
+  /* column_labels.text_transform */
+  vertical-align: middle;
+  padding: 5px;
+  margin: 10px;
+  overflow-x: hidden;
+}
+
+#tvwtalaume .gt_sep_right {
+  border-right: 5px solid #FFFFFF;
+}
+
+#tvwtalaume .gt_group_heading {
+  padding: 8px;
+  /* row_group.padding */
+  color: #333333;
+  background-color: #FFFFFF;
+  /* row_group.background.color */
+  font-size: 100%;
+  /* row_group.font.size */
+  font-weight: initial;
+  /* row_group.font.weight */
+  text-transform: inherit;
+  /* row_group.text_transform */
+  border-top-style: solid;
+  /* row_group.border.top.style */
+  border-top-width: 2px;
+  /* row_group.border.top.width */
+  border-top-color: #D3D3D3;
+  /* row_group.border.top.color */
+  border-bottom-style: solid;
+  /* row_group.border.bottom.style */
+  border-bottom-width: 2px;
+  /* row_group.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* row_group.border.bottom.color */
+  border-left-style: none;
+  /* row_group.border.left.style */
+  border-left-width: 1px;
+  /* row_group.border.left.width */
+  border-left-color: #D3D3D3;
+  /* row_group.border.left.color */
+  border-right-style: none;
+  /* row_group.border.right.style */
+  border-right-width: 1px;
+  /* row_group.border.right.width */
+  border-right-color: #D3D3D3;
+  /* row_group.border.right.color */
+  vertical-align: middle;
+}
+
+#tvwtalaume .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  /* row_group.background.color */
+  font-size: 100%;
+  /* row_group.font.size */
+  font-weight: initial;
+  /* row_group.font.weight */
+  border-top-style: solid;
+  /* row_group.border.top.style */
+  border-top-width: 2px;
+  /* row_group.border.top.width */
+  border-top-color: #D3D3D3;
+  /* row_group.border.top.color */
+  border-bottom-style: solid;
+  /* row_group.border.bottom.style */
+  border-bottom-width: 2px;
+  /* row_group.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* row_group.border.bottom.color */
+  vertical-align: middle;
+}
+
+#tvwtalaume .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+  /* row.striping.background_color */
+}
+
+#tvwtalaume .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#tvwtalaume .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#tvwtalaume .gt_row {
+  padding-top: 8px;
+  /* data_row.padding */
+  padding-bottom: 8px;
+  /* data_row.padding */
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  /* table_body.hlines.style */
+  border-top-width: 1px;
+  /* table_body.hlines.width */
+  border-top-color: #D3D3D3;
+  /* table_body.hlines.color */
+  border-left-style: none;
+  /* table_body.vlines.style */
+  border-left-width: 1px;
+  /* table_body.vlines.width */
+  border-left-color: #D3D3D3;
+  /* table_body.vlines.color */
+  border-right-style: none;
+  /* table_body.vlines.style */
+  border-right-width: 1px;
+  /* table_body.vlines.width */
+  border-right-color: #D3D3D3;
+  /* table_body.vlines.color */
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#tvwtalaume .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  /* stub.background.color */
+  font-weight: initial;
+  /* stub.font.weight */
+  text-transform: inherit;
+  /* stub.text_transform */
+  border-right-style: solid;
+  /* stub.border.style */
+  border-right-width: 2px;
+  /* stub.border.width */
+  border-right-color: #D3D3D3;
+  /* stub.border.color */
+  padding-left: 12px;
+}
+
+#tvwtalaume .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  /* summary_row.background.color */
+  text-transform: inherit;
+  /* summary_row.text_transform */
+  padding-top: 8px;
+  /* summary_row.padding */
+  padding-bottom: 8px;
+  /* summary_row.padding */
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvwtalaume .gt_first_summary_row {
+  padding-top: 8px;
+  /* summary_row.padding */
+  padding-bottom: 8px;
+  /* summary_row.padding */
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  /* summary_row.border.style */
+  border-top-width: 2px;
+  /* summary_row.border.width */
+  border-top-color: #D3D3D3;
+  /* summary_row.border.color */
+}
+
+#tvwtalaume .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  /* grand_summary_row.background.color */
+  text-transform: inherit;
+  /* grand_summary_row.text_transform */
+  padding-top: 8px;
+  /* grand_summary_row.padding */
+  padding-bottom: 8px;
+  /* grand_summary_row.padding */
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tvwtalaume .gt_first_grand_summary_row {
+  padding-top: 8px;
+  /* grand_summary_row.padding */
+  padding-bottom: 8px;
+  /* grand_summary_row.padding */
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  /* grand_summary_row.border.style */
+  border-top-width: 6px;
+  /* grand_summary_row.border.width */
+  border-top-color: #D3D3D3;
+  /* grand_summary_row.border.color */
+}
+
+#tvwtalaume .gt_table_body {
+  border-top-style: solid;
+  /* table_body.border.top.style */
+  border-top-width: 2px;
+  /* table_body.border.top.width */
+  border-top-color: #D3D3D3;
+  /* table_body.border.top.color */
+  border-bottom-style: solid;
+  /* table_body.border.bottom.style */
+  border-bottom-width: 2px;
+  /* table_body.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* table_body.border.bottom.color */
+}
+
+#tvwtalaume .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  /* footnotes.background.color */
+  border-bottom-style: none;
+  /* footnotes.border.bottom.style */
+  border-bottom-width: 2px;
+  /* footnotes.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* footnotes.border.bottom.color */
+  border-left-style: none;
+  /* footnotes.border.lr.color */
+  border-left-width: 2px;
+  /* footnotes.border.lr.color */
+  border-left-color: #D3D3D3;
+  /* footnotes.border.lr.color */
+  border-right-style: none;
+  /* footnotes.border.lr.color */
+  border-right-width: 2px;
+  /* footnotes.border.lr.color */
+  border-right-color: #D3D3D3;
+  /* footnotes.border.lr.color */
+}
+
+#tvwtalaume .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  /* footnotes.font.size */
+  padding: 4px;
+  /* footnotes.padding */
+}
+
+#tvwtalaume .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  /* source_notes.background.color */
+  border-bottom-style: none;
+  /* source_notes.border.bottom.style */
+  border-bottom-width: 2px;
+  /* source_notes.border.bottom.width */
+  border-bottom-color: #D3D3D3;
+  /* source_notes.border.bottom.color */
+  border-left-style: none;
+  /* source_notes.border.lr.style */
+  border-left-width: 2px;
+  /* source_notes.border.lr.style */
+  border-left-color: #D3D3D3;
+  /* source_notes.border.lr.style */
+  border-right-style: none;
+  /* source_notes.border.lr.style */
+  border-right-width: 2px;
+  /* source_notes.border.lr.style */
+  border-right-color: #D3D3D3;
+  /* source_notes.border.lr.style */
+}
+
+#tvwtalaume .gt_sourcenote {
+  font-size: 90%;
+  /* source_notes.font.size */
+  padding: 4px;
+  /* source_notes.padding */
+}
+
+#tvwtalaume .gt_left {
+  text-align: left;
+}
+
+#tvwtalaume .gt_center {
+  text-align: center;
+}
+
+#tvwtalaume .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#tvwtalaume .gt_font_normal {
+  font-weight: normal;
+}
+
+#tvwtalaume .gt_font_bold {
+  font-weight: bold;
+}
+
+#tvwtalaume .gt_font_italic {
+  font-style: italic;
+}
+
+#tvwtalaume .gt_super {
+  font-size: 65%;
+}
+
+#tvwtalaume .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="tvwtalaume" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <th colspan="6" class="gt_heading gt_title gt_font_normal gt_center" style>MLB Pitch Distribution, 2015-2019<sup class="gt_footnote_marks">1</sup></th>
+    </tr>
+    <tr>
+      <th colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_center gt_bottom_border" style>Percent of All Pitches Thrown<sup class="gt_footnote_marks"></sup></th>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">Pitch Type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">2015</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">2016</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">2017</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">2018</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">2019</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left">4-Seam Fastball</td>
+      <td class="gt_row gt_right">35.59</td>
+      <td class="gt_row gt_right">36.00</td>
+      <td class="gt_row gt_right">35.07</td>
+      <td class="gt_row gt_right">35.41</td>
+      <td class="gt_row gt_right">36.02</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left gt_striped">Slider</td>
+      <td class="gt_row gt_right gt_striped">14.52</td>
+      <td class="gt_row gt_right gt_striped">15.12</td>
+      <td class="gt_row gt_right gt_striped">16.16</td>
+      <td class="gt_row gt_right gt_striped">16.82</td>
+      <td class="gt_row gt_right gt_striped">17.71</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">2-Seam Fastball</td>
+      <td class="gt_row gt_right">11.50</td>
+      <td class="gt_row gt_right">11.12</td>
+      <td class="gt_row gt_right">13.13</td>
+      <td class="gt_row gt_right">10.97</td>
+      <td class="gt_row gt_right">8.40</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left gt_striped">Changeup</td>
+      <td class="gt_row gt_right gt_striped">10.54</td>
+      <td class="gt_row gt_right gt_striped">10.15</td>
+      <td class="gt_row gt_right gt_striped">9.92</td>
+      <td class="gt_row gt_right gt_striped">10.46</td>
+      <td class="gt_row gt_right gt_striped">11.02</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Sinker</td>
+      <td class="gt_row gt_right">9.75</td>
+      <td class="gt_row gt_right">9.15</td>
+      <td class="gt_row gt_right">7.24</td>
+      <td class="gt_row gt_right">8.20</td>
+      <td class="gt_row gt_right">7.62</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left gt_striped">Curveball</td>
+      <td class="gt_row gt_right gt_striped">7.56</td>
+      <td class="gt_row gt_right gt_striped">8.72</td>
+      <td class="gt_row gt_right gt_striped">7.88</td>
+      <td class="gt_row gt_right gt_striped">7.88</td>
+      <td class="gt_row gt_right gt_striped">8.93</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Cutter</td>
+      <td class="gt_row gt_right">5.52</td>
+      <td class="gt_row gt_right">4.91</td>
+      <td class="gt_row gt_right">5.26</td>
+      <td class="gt_row gt_right">5.58</td>
+      <td class="gt_row gt_right">6.37</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left gt_striped">Knuckle Curve</td>
+      <td class="gt_row gt_right gt_striped">2.24</td>
+      <td class="gt_row gt_right gt_striped">2.13</td>
+      <td class="gt_row gt_right gt_striped">2.96</td>
+      <td class="gt_row gt_right gt_striped">2.70</td>
+      <td class="gt_row gt_right gt_striped">2.11</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Split Finger</td>
+      <td class="gt_row gt_right">1.60</td>
+      <td class="gt_row gt_right">1.45</td>
+      <td class="gt_row gt_right">1.63</td>
+      <td class="gt_row gt_right">1.45</td>
+      <td class="gt_row gt_right">1.46</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left gt_striped">Knuckle Ball</td>
+      <td class="gt_row gt_right gt_striped">0.53</td>
+      <td class="gt_row gt_right gt_striped">0.59</td>
+      <td class="gt_row gt_right gt_striped">0.37</td>
+      <td class="gt_row gt_right gt_striped">0.10</td>
+      <td class="gt_row gt_right gt_striped">0.03</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">NA</td>
+      <td class="gt_row gt_right">0.09</td>
+      <td class="gt_row gt_right">0.16</td>
+      <td class="gt_row gt_right">0.31</td>
+      <td class="gt_row gt_right">0.38</td>
+      <td class="gt_row gt_right">0.33</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left gt_striped">Eephus</td>
+      <td class="gt_row gt_right gt_striped">0.05</td>
+      <td class="gt_row gt_right gt_striped">0.01</td>
+      <td class="gt_row gt_right gt_striped">0.03</td>
+      <td class="gt_row gt_right gt_striped">0.03</td>
+      <td class="gt_row gt_right gt_striped">0.01</td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left">Forkball</td>
+      <td class="gt_row gt_right">0.03</td>
+      <td class="gt_row gt_right">0.04</td>
+      <td class="gt_row gt_right">0.03</td>
+      <td class="gt_row gt_right">0.01</td>
+      <td class="gt_row gt_right">0.00</td>
+    </tr>
+  </tbody>
+  
+  <tfoot>
+    <tr class="gt_footnotes">
+      <td colspan="6">
+        <p class="gt_footnote">
+          <sup class="gt_footnote_marks">
+            <em>1</em>
+          </sup>
+           
+          Data via Baseball Savant
+          <br />
+        </p>
+      </td>
+    </tr>
+  </tfoot>
+</table></div>
 </div>
 
 

@@ -46,14 +46,50 @@ yearly_npitch <- pitches %>%
   rename(year = "year(game_date)")
 
 # for-loop iterates over each year and gets pitch distribution for each year
+# uses lubridate package to get the year for each game
+# each table shows the top five most frequently thrown pitches
+# paste function enables use of year input variable in column title
 
-for (yr in 2015:2019) {
+yearly_pitchdistr <- function(yr) {
   pitches %>%
     filter(year(game_date) == yr) %>% 
     group_by(pitch_name) %>% 
     summarize(percent = n() / pull(filter(yearly_npitch, year == yr), count)) %>%
-    arrange(desc(percent)) %>% 
-    gt()
+    mutate(percent = 100 * round(percent, 4)) %>% 
+    arrange(desc(percent))
 } 
+
+# gets yearly pitch distribution and joins into one dataframe
+# combines these pitch distributions into a list and joins by pitch name
+
+distr_2019 <- yearly_pitchdistr(2019)
+distr_2018 <- yearly_pitchdistr(2018)
+distr_2017 <- yearly_pitchdistr(2017)
+distr_2016 <- yearly_pitchdistr(2016)
+distr_2015 <- yearly_pitchdistr(2015)
+
+distr_combined <- list(distr_2015, distr_2016, distr_2017, 
+                       distr_2018, distr_2019) %>% 
+  reduce(inner_join, by = "pitch_name") %>% 
+  rename(percent_2015 = "percent.x",
+         percent_2016 = "percent.y", 
+         percent_2017 = "percent.x.x",
+         percent_2018 = "percent.y.y",
+         percent_2019 = "percent")
+
+# Table time!
+
+distr_combined %>% 
+  gt() %>% 
+  tab_header(title = "MLB Pitch Distribution, 2015-2019",
+             subtitle = "Percent of All Pitches Thrown") %>% 
+  cols_label(pitch_name = "Pitch Type", 
+             percent_2015 = "2015",
+             percent_2016 = "2016",
+             percent_2017 = "2017",
+             percent_2018 = "2018", 
+             percent_2019 = "2019") %>% 
+  tab_footnote(footnote = "Data via Baseball Savant", 
+               locations = cells_title())
 
 ```
