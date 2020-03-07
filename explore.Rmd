@@ -35,7 +35,7 @@ pitches <- load_files("data")
 
 We replicate some of the code from previous work in order to load in the multiple gigabytes of pitch data we've gathered since the start of the 2015 season. Let's explore how league-wide pitch distributions have evolved over the past five years.
 
-```{r exploration, include = TRUE, echo = FALSE}
+```{r exploration}
 
 # looking at how the percent of different pitches has evolved over time
 # let's first get the number of pitches in a given year into a new tibble
@@ -79,7 +79,7 @@ distr_combined <- list(distr_2015, distr_2016, distr_2017,
 
 # Table time!
 
-distr_combined %>% 
+distr_combined_table <- distr_combined %>% 
   gt() %>% 
   tab_header(title = "MLB Pitch Distribution, 2015-2019",
              subtitle = "Percent of All Pitches Thrown") %>% 
@@ -93,3 +93,13 @@ distr_combined %>%
                locations = cells_title())
 
 ```
+
+```{r table, include = TRUE, echo = FALSE}
+distr_combined_table
+```
+  
+With this basic table, we see that there hasn't been a massive overhaul in the type of pitches thrown recently, but instead relatively small changes. However, because hundreds of thousands of pitches are thrown each year, a drop in frequency of even a percentage point or two indicates a significant leaguewide shift in approach. For example, two-seam fastballs and sinkers, both fastball variants with movement thrown more often by pitchers seeking ground balls instead of strikeouts, have decreased in frequency by a combined 5.23% since 2015 as pitchers have shifted towards more of a power and strikeout-dominated approach over pitching to induce soft contact.  
+
+Additionally, we see that offspeed offerings like curveballs and sliders have increased as these fastball offshoots have decreased, and to the dismay of those who've admired the work of 2012 National League Cy Young winner R.A. Dickey, there are almost no knuckleballers left in the majors. Notably, there remains a non-negligible number of pitches categorized as `NA`, with an uptick in 2017 coinciding with a revamping of the Statcast system that ensured greater consistency across all parks. This suggests that there might be a constant rate of non-recording for pitches in Statcast of around 1 in 300, a significant percentage that may explain why MLB is shifting the Statcast operator from Trackman to HawkEye (of tennis fame) in the 2020 season.
+
+#### [Link to GitHub Repository](https://github.com/tjhuffman4246/final_project)
