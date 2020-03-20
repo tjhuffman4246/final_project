@@ -1,7 +1,7 @@
 ---
 title: "Explore"
 author: "Tate Huffman"
-date: "3/06/2020"
+date: "3/20/2020"
 output: html_document
 ---
 
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(include = FALSE)
 library(baseballr)
 library(lubridate)
 library(gt)
+library(magrittr)
 library(tidyverse)
 ```
 
@@ -35,7 +36,7 @@ pitches <- load_files("data")
 
 We replicate some of the code from previous work in order to load in the multiple gigabytes of pitch data we've gathered since the start of the 2015 season. Let's explore how league-wide pitch distributions have evolved over the past five years.
 
-```{r exploration}
+```{r explore_ms4}
 
 # looking at how the percent of different pitches has evolved over time
 # let's first get the number of pitches in a given year into a new tibble
@@ -101,5 +102,39 @@ distr_combined_table
 With this basic table, we see that there hasn't been a massive overhaul in the type of pitches thrown recently, but instead relatively small changes. However, because hundreds of thousands of pitches are thrown each year, a drop in frequency of even a percentage point or two indicates a significant leaguewide shift in approach. For example, two-seam fastballs and sinkers, both fastball variants with movement thrown more often by pitchers seeking ground balls instead of strikeouts, have decreased in frequency by a combined 5.23% since 2015 as pitchers have shifted towards more of a power and strikeout-dominated approach over pitching to induce soft contact.  
 
 Additionally, we see that offspeed offerings like curveballs and sliders have increased as these fastball offshoots have decreased, and to the dismay of those who've admired the work of 2012 National League Cy Young winner R.A. Dickey, there are almost no knuckleballers left in the majors. Notably, there remains a non-negligible number of pitches categorized as `NA`, with an uptick in 2017 coinciding with a revamping of the Statcast system that ensured greater consistency across all parks. This suggests that there might be a constant rate of non-recording for pitches in Statcast of around 1 in 300, a significant percentage that may explain why MLB is shifting the Statcast operator from Trackman to HawkEye (of tennis fame) in the 2020 season.
+
+```{r explore_ms5}
+
+# creating a subset of the pitch data from just one game
+# this makes data easier to work with
+
+pitch_sample <- pitches %>% 
+  filter(game_pk == 413661)
+
+# here, we create two-pitch sequences for each plate appearance
+# the sequence is NA if it's the first pitch of the PA, or...
+# if one of the pitches is not recorded
+# otherwise, the sequence is a concatenation of the previous and current pitch
+
+pitch_sample %<>% mutate(seq = ifelse(!(pitch_number == 1 |
+                                        is.na(pitch_type) |
+                                        is.na(lag(pitch_type))), 
+                                      paste0(lag(pitch_type), pitch_type),
+                                      NA))
+
+# this works! now we can apply it to the whole dataset
+# good news with this is that we're not concerned w/ game/inning crossover
+# because the sequence is NA if it's the first pitch of the PA...
+# meaning that any P change, new inning, new game, etc. will be accounted for
+
+pitches %<>% mutate(seq = ifelse(!(pitch_number == 1 |
+                                        is.na(pitch_type) |
+                                        is.na(lag(pitch_type))), 
+                                      paste0(lag(pitch_type), pitch_type),
+                                      NA))
+
+```
+
+
 
 #### [Link to GitHub Repository](https://github.com/tjhuffman4246/final_project)
