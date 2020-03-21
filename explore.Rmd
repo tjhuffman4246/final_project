@@ -7,10 +7,12 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(include = FALSE)
+options(scipen = 999)
 library(baseballr)
 library(lubridate)
 library(gt)
 library(magrittr)
+library(forcats)
 library(tidyverse)
 ```
 
@@ -115,8 +117,9 @@ pitch_sample <- pitches %>%
 # the sequence is NA if it's the first pitch of the PA, or...
 # if one of the pitches is not recorded
 # otherwise, the sequence is a concatenation of the previous and current pitch
+# this is why we use the lag() function
 
-pitch_sample %<>% mutate(seq = ifelse(!(pitch_number == 1 |
+pitch_sample %<>% mutate(pitch_seq = ifelse(!(pitch_number == 1 |
                                         is.na(pitch_type) |
                                         is.na(lag(pitch_type))), 
                                       paste0(lag(pitch_type), pitch_type),
@@ -127,11 +130,38 @@ pitch_sample %<>% mutate(seq = ifelse(!(pitch_number == 1 |
 # because the sequence is NA if it's the first pitch of the PA...
 # meaning that any P change, new inning, new game, etc. will be accounted for
 
-pitches %<>% mutate(seq = ifelse(!(pitch_number == 1 |
+pitches %<>% mutate(pitch_seq = ifelse(!(pitch_number == 1 |
                                         is.na(pitch_type) |
                                         is.na(lag(pitch_type))), 
                                       paste0(lag(pitch_type), pitch_type),
                                       NA))
+
+# now that we have our sequences, let's see which ones are the most popular
+# slice 2:6, not 1:5, because #1 is NA (makes sense: first pitch of each PA)
+# we create our legend by initializing this vector and including it in aes
+# we also reorder it out here in order to match the order of the bar plot
+
+top_seq <- c("Fastball-Fastball", "Fastball-Slider", "Slider-Slider", 
+             "Slider-Fastball", "Sinker-Sinker")
+
+top_seq %<>% fct_relevel("Fastball-Fastball", "Fastball-Slider", 
+                         "Slider-Slider",  "Slider-Fastball", "Sinker-Sinker")
+
+ms5_plot <- pitches %>% 
+  group_by(pitch_seq) %>% 
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  slice(2:6) %>% 
+  mutate(pitch_seq = fct_reorder(pitch_seq, count, .desc = TRUE)) %>% 
+  ggplot() +
+  geom_bar(aes(x = pitch_seq, y = count, fill = top_seq), stat = "identity") +
+  xlab("Pitch Sequence") +
+  ylab("Count") +
+  labs(title = "Most Popular MLB Pitch Sequences",
+       subtitle = "From 2015 through 2019",
+       caption = "Data via Baseball Savant",
+       fill = "Top Sequences") +
+  theme_classic()
 
 ```
 
