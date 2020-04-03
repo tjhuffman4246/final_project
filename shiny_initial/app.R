@@ -1,6 +1,6 @@
 library(shiny)
 
-ui <- navbarPage("Menu",
+ui <- navbarPage("Final Project",
                  tabPanel("Home",
                           titlePanel("Effects of Pitch Sequencing on MLB Pitcher Success"),
                           mainPanel(
@@ -32,10 +32,12 @@ ui <- navbarPage("Menu",
                               introduced Statcast, its player-tracking camera system, in 2015, they 
                               made all the data publicly available and accessible via ",
                               a("Baseball Savant,",
-                                href = "https://baseballsavant.mlb.com"),
+                                href = "https://baseballsavant.mlb.com",
+                                target = "_blank"),
                               "and for this project I collected it using Bill Petti's immensely useful",
                               a(code("baseballr"), "package.",
-                                href = "http://billpetti.github.io/baseballr/"),
+                                href = "http://billpetti.github.io/baseballr/", 
+                                target = "_blank"),
                               "The past two years of data have been found to be more accurate than 
                               2015-2017, but because we're primarily interested in basic pitch data and 
                               less so more advanced metrics like spin rate and exit velocity, I feel 
@@ -48,12 +50,15 @@ ui <- navbarPage("Menu",
                               for this project, but should there be a material change I would consider 
                               using", 
                               a("Retrosheet play-by-play logs,", 
-                                href = "https://www.retrosheet.org"), "Sean Lahman's", 
+                                href = "https://www.retrosheet.org", 
+                                target = "_blank"), "Sean Lahman's", 
                               a("baseball database, ", 
-                                href = "http://www.seanlahman.com/baseball-archive/statistics/"), 
+                                href = "http://www.seanlahman.com/baseball-archive/statistics/",
+                                target = "_blank"), 
                               "or the very detailed", 
                               a(code("openWAR"), "package.", 
-                                href = "https://github.com/beanumber/openWAR")
+                                href = "https://github.com/beanumber/openWAR",
+                                target = "_blank")
                               ),
                             h3("Personal"),
                             p("My name is Tate Huffman, and I'm a junior at Harvard College studying 
@@ -62,12 +67,18 @@ ui <- navbarPage("Menu",
                               Analysis Collective."
                               ),
                             h4(a("Email",
-                                 href = "mailto:thuffman@college.harvard.edu")),
+                                 href = "mailto:thuffman@college.harvard.edu",
+                                 target = "_blank")),
                             h4(a("Link to GitHub Repository",
-                                 href = "https://github.com/tjhuffman4246/final_project"))
+                                 href = "https://github.com/tjhuffman4246/final_project",
+                                 target = "_blank"))
                             
                           )),
-                 tabPanel("More")
+                 tabPanel("More",
+                          titlePanel("More"),
+                          mainPanel(
+                            p("More to be added soon!")
+                          ))
    
 )
 
