@@ -163,6 +163,10 @@ ms5_plot <- pitches %>%
        fill = "Top Sequences") +
   theme_classic()
 
+ms5_plot
+
+ggsave("shiny_initial/topsequences.png")
+
 ```
 
 
