@@ -112,7 +112,7 @@ Additionally, we see that offspeed offerings like curveballs and sliders have in
 # this makes data easier to work with
 
 pitch_sample <- pitches %>% 
-  sample_n(10000)
+  filter(game_pk == 413661)
 
 # here, we create two-pitch sequences for each plate appearance
 # the sequence is NA if it's the first pitch of the PA, or...
@@ -211,6 +211,28 @@ pitches %<>%
                                  batter == 605228 ~ "Jose Fernandez",
                                  batter == 115629 ~ "LaTroy Hawkins",
                                  TRUE ~ as.character(batter_name)))
+
+# doing some more variable creation - adding into sequencing info
+# more comparisons to previous pitch, including speed and location
+# uses same methodology as earlier
+
+pitch_sample %<>% 
+  mutate(speed_diff = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             release_speed - lag(release_speed), NA),
+         loc_diff_x = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             plate_x - lag(plate_x), NA),
+         loc_diff_z = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             plate_z - lag(plate_z), NA),
+         loc_diff_total = ifelse(!(pitch_number == 1 | 
+                                     is.na(pitch_type) | 
+                                     is.na(lag(pitch_type))),
+                                 sqrt(loc_diff_x^2 + loc_diff_z^2), NA))
 
 ```
 
