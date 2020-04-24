@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(include = FALSE)
 options(scipen = 999)
 library(baseballr)
+library(janitor)
 library(lubridate)
 library(gt)
 library(magrittr)
@@ -18,7 +19,7 @@ library(tidyverse)
 
 ## Looking at Our Data
 
-```{r load_info}
+```{r load_info, cache = TRUE}
 
 # replicating function from gather.Rmd to load in data
 # creates function to load in these files, via below Stack Overflow thread:
@@ -105,13 +106,13 @@ With this basic table, we see that there hasn't been a massive overhaul in the t
 
 Additionally, we see that offspeed offerings like curveballs and sliders have increased as these fastball offshoots have decreased, and to the dismay of those who've admired the work of 2012 National League Cy Young winner R.A. Dickey, there are almost no knuckleballers left in the majors. Notably, there remains a non-negligible number of pitches categorized as `NA`, with an uptick in 2017 coinciding with a revamping of the Statcast system that ensured greater consistency across all parks. This suggests that there might be a constant rate of non-recording for pitches in Statcast of around 1 in 300, a significant percentage that may explain why MLB is shifting the Statcast operator from Trackman to HawkEye (of tennis fame) in the 2020 season.
 
-```{r explore_ms5}
+```{r explore_sequence, cache = TRUE}
 
 # creating a subset of the pitch data from just one game
 # this makes data easier to work with
 
 pitch_sample <- pitches %>% 
-  filter(game_pk == 413661)
+  sample_n(10000)
 
 # here, we create two-pitch sequences for each plate appearance
 # the sequence is NA if it's the first pitch of the PA, or...
@@ -135,7 +136,10 @@ pitches %<>% mutate(pitch_seq = ifelse(!(pitch_number == 1 |
                                         is.na(lag(pitch_type))), 
                                       paste0(lag(pitch_type), pitch_type),
                                       NA))
+```
 
+
+```{r explore_ms5_plot}
 # now that we have our sequences, let's see which ones are the most popular
 # slice 2:6, not 1:5, because #1 is NA (makes sense: first pitch of each PA)
 # we create our legend by initializing this vector and including it in aes
@@ -169,6 +173,46 @@ ggsave("shiny_initial/topsequences.png")
 
 ```
 
+```{r explore_ctd}
+
+# now we're trying to figure out how to get batter names in this data
+# downloaded csv from https://www.smartfantasybaseball.com/tools/
+# contains player info along with their MLB identification numbers
+
+players <- read_csv("players.csv", col_types = cols()) %>% 
+  select(mlb_id, mlb_name)
+
+# let's see if we can join this to our pitch sample dataset to get batter names
+
+pitch_sample %<>% 
+  left_join(players, by = c("batter" = "mlb_id")) %>% 
+  rename(batter_name = "mlb_name", pitcher_name = "player_name")
+
+# this appears to work (somewhat)... let's try it on our entire dataset
+
+pitches %<>% 
+  left_join(players, by = c("batter" = "mlb_id")) %>% 
+  rename(batter_name = "mlb_name", pitcher_name = "player_name")
+
+# we have twelve names that don't have batter names - we manually fill these in
+# do this by adding ID to Savant URL
+
+pitches %<>% 
+  mutate(batter_name = case_when(batter == 121347 ~ "Alex Rodriguez",
+                                 batter == 116338 ~ "Torii Hunter",
+                                 batter == 133380 ~ "Aramis Ramirez",
+                                 batter == 120074 ~ "David Ortiz",
+                                 batter == 150229 ~ "A.J. Pierzynski",
+                                 batter == 218596 ~ "Tim Hudson",
+                                 batter == 150359 ~ "A.J. Burnett",
+                                 batter == 150302 ~ "Jason Marquis",
+                                 batter == 329092 ~ "Randy Choate",
+                                 batter == 279824 ~ "Mark Buehrle",
+                                 batter == 605228 ~ "Jose Fernandez",
+                                 batter == 115629 ~ "LaTroy Hawkins",
+                                 TRUE ~ as.character(batter_name)))
+
+```
 
 
 #### [Link to GitHub Repository](https://github.com/tjhuffman4246/final_project)
