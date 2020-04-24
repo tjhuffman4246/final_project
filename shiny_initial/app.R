@@ -9,6 +9,12 @@ ui <- navbarPage("Final Project",
                             img(src = "topsequences.png", height = 700, width = 700)
                             )
                           ),
+                 tabPanel("Explore",
+                          titlePanel("Effects of Pitch Sequencing on MLB Pitcher Success"),
+                          mainPanel(
+                            
+                            )
+                          ),
                  tabPanel("About",
                           titlePanel("About"),
                           mainPanel(

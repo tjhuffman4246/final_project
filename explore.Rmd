@@ -112,7 +112,7 @@ Additionally, we see that offspeed offerings like curveballs and sliders have in
 # this makes data easier to work with
 
 pitch_sample <- pitches %>% 
-  filter(game_pk == 413661)
+  filter(game_pk %in% c(413661:413663))
 
 # here, we create two-pitch sequences for each plate appearance
 # the sequence is NA if it's the first pitch of the PA, or...
@@ -233,6 +233,40 @@ pitch_sample %<>%
                                      is.na(pitch_type) | 
                                      is.na(lag(pitch_type))),
                                  sqrt(loc_diff_x^2 + loc_diff_z^2), NA))
+
+# okay, let's try to see if we can separate starters and relievers
+# does it work if we group by game and team?
+# it does! took a bit of finagling, but we created a binary indicator for SP/RP
+
+pitch_sample %<>% 
+  group_by(game_pk, inning_topbot) %>% 
+  mutate(starter = ifelse(pitcher_name == first(pitcher_name), 1, 0)) %>% 
+  ungroup()
+
+# now let's add these previous two addendums to all of our pitches
+
+pitches %<>% 
+  mutate(speed_diff = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             release_speed - lag(release_speed), NA),
+         loc_diff_x = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             plate_x - lag(plate_x), NA),
+         loc_diff_z = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             plate_z - lag(plate_z), NA),
+         loc_diff_total = ifelse(!(pitch_number == 1 | 
+                                     is.na(pitch_type) | 
+                                     is.na(lag(pitch_type))),
+                                 sqrt(loc_diff_x^2 + loc_diff_z^2), NA))
+
+pitches %<>% 
+  group_by(game_pk, inning_topbot) %>% 
+  mutate(starter = ifelse(pitcher_name == first(pitcher_name), 1, 0)) %>% 
+  ungroup()
 
 ```
 
