@@ -90,5 +90,25 @@ pitch_sample <- pitches %>%
 
 ```
 
+First, we'll create a prelimary linear model to predict wOBA solely from pitch sequence, focusing on those sequences that have appeared at least 2.5\% of the time.
+
+```{r basic_model, include = TRUE, echo = FALSE}
+
+# lots of this content taken from PPBDS
+# first we figure out what sequences are thrown the minimum percent of the time
+# for computational efficiency, we create a variable to help with this
+
+num_notna <- pitches %>% filter(!is.na(pitch_seq)) %>% nrow
+
+sequences <- pitches %>% 
+  filter(!is.na(pitch_seq)) %>% 
+  group_by(pitch_seq) %>% 
+  summarize(pct = n() / num_notna) %>% 
+  arrange(desc(pct)) %>% 
+  filter(pct >= .025) %>% 
+  select(pitch_seq) %>% 
+  pull()
+
+```
 
 
