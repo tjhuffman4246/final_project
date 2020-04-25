@@ -91,12 +91,14 @@ pitches %<>%
   ungroup() %>% 
   mutate(score_diff = fld_score - bat_score,
          inning_topbot = ifelse(inning_topbot == "Top", 1, 0),
-         on_3b = as.integer(!is.na(on_3b)),
-         on_2b = as.integer(!is.na(on_2b)),
-         on_1b = as.integer(!is.na(on_1b)),
+         on_3b = ifelse(is.na(on_3b), 0, 1),
+         on_2b = ifelse(is.na(on_2b), 0, 1),
+         on_1b = ifelse(is.na(on_1b), 0, 1),
          same_handed = ifelse(stand == p_throws, 1, 0),
+         stand = as_factor(stand),
+         p_throws = as_factor(p_throws),
          pitch_seq = as_factor(pitch_seq), 
-         pitch_seq = fct_lump(pitch_seq, prop = 0.01))
+         pitch_seq = fct_lump(pitch_seq, prop = 0.02))
 
 # creates a smaller sample dataset w/ data from random 1,000 games
 
@@ -120,9 +122,24 @@ pitch_sample_mod <- pitch_sample %>%
 
 In general, we want to create a model to predict weighted on-base average (wOBA - a measurement of overall offensive performance) from the available data, and to see the degree to which sequencing affects these predictions. To do this, we'll create several models, which we'll save as `formula` objects in R.
 
-```{r basic_model}
+```{r models}
 
+# this model predicts wOBA from pitch sequence
 
+basic_seq_form <- formula(woba_value ~ pitch_seq)
+
+# this model adjusts the above to incorporate handedness of batter and pitcher
+# including an interaction term for same-handedness
+# also includes variable for whether player is a starter
+
+matchup_form <- formula(woba_value ~ pitch_seq * same_handed + 
+                          stand + p_throws + starter)
+
+# this model includes contextual information
+# specifically, count, outs, inning, baserunners, and score differential
+
+context_form <- update(matchup_form, ~ . + balls + strikes + outs_when_up +
+                         on_3b + on_2b + on_1b + inning + inning_topbot)
 
 ```
 
