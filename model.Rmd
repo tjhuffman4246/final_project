@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(include = FALSE)
 library(magrittr)
+library(gt)
 library(haven)
 library(tidyverse)
 library(tidymodels)
@@ -122,11 +123,13 @@ pitch_sample_mod <- pitch_sample %>%
 
 In general, we want to create a model to predict weighted on-base average (wOBA - a measurement of overall offensive performance) from the available data, and to see the degree to which sequencing affects these predictions. To do this, we'll create several models, which we'll save as `formula` objects in R.
 
-```{r models}
+```{r model_prep}
+
+# most, if not all, of this code comes from PPBDS
 
 # this model predicts wOBA from pitch sequence
 
-basic_seq_form <- formula(woba_value ~ pitch_seq)
+seq_form <- formula(woba_value ~ pitch_seq)
 
 # this model adjusts the above to incorporate handedness of batter and pitcher
 # including an interaction term for same-handedness
@@ -141,5 +144,77 @@ matchup_form <- formula(woba_value ~ pitch_seq * same_handed +
 context_form <- update(matchup_form, ~ . + balls + strikes + outs_when_up +
                          on_3b + on_2b + on_1b + inning + inning_topbot)
 
+# this model includes other information about the pitch
+# specifically, how it compares to the previous one
+
+detailed_form <- update(context_form, ~ . + release_speed + pfx_x + pfx_z + 
+                          plate_x + plate_z + speed_diff + 
+                          loc_diff_x + loc_diff_z)
+
+# here, we combine all these models into a single tibble
+
+pitch_formulas <- tibble(formula = c(seq_form,
+                                     matchup_form,
+                                     context_form,
+                                     detailed_form),
+                         group = c("Sequence model",
+                                   "Matchup model",
+                                   "Context model",
+                                   "Detailed model"))
+
+# create specification for linear regression
+
+lm_spec <- linear_reg() %>%
+  set_engine("lm") %>%
+  set_mode("regression") 
+
 ```
 
+Importantly, we also split the data into train and test sets - these are subsets of the thousand-game subset of all the data, but it's still large enough that we're comfortable with the model creation process.
+
+```{r train_test}
+
+# split model into train and test sets
+
+set.seed(1005)
+
+pitch_sample_split <- initial_split(pitch_sample_mod, prop = 0.8)
+pitch_sample_train <- training(pitch_sample_split)
+pitch_sample_test <- testing(pitch_sample_split)
+
+```
+
+We use cross-validation to compare and analyze the different models.
+
+```{r cv}
+
+# creates 5 folds for cross-validation
+
+set.seed(1005)
+
+pitch_sample_folds <- pitch_sample_train %>%
+  vfold_cv(v = 5)
+
+# uses PPBDS for pretty much all of this
+# particularly, we map the fit_resamples() function to each formula
+
+folds_metrics <- pitch_formulas %>%
+  mutate(metrics = map(formula, 
+                       ~ fit_resamples(lm_spec, 
+                                       preprocessor = .,
+                                       resamples = pitch_sample_folds) %>%
+                         collect_metrics()))
+
+# now let's check out our results!
+
+folds_metrics %>%
+  mutate(mean_rmse = map_dbl(metrics, 
+                             ~ filter(., .metric == "rmse") %>% pull(mean)),
+         se_rmse = map_dbl(metrics, 
+                           ~ filter(., .metric == "rmse") %>% pull(std_err))) %>%
+  select(group, mean_rmse, se_rmse) %>% 
+  gt()
+
+```
+
+From our initial cross-validation process on our test set, we see that as we add more variables, our MSE improves. 
