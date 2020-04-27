@@ -126,20 +126,34 @@ pitches %<>%
 
 ```
 
-```{r sequences_overall}
+```{r graphics}
 
 # this mostly replicates the code from Milestone 5
 # instead, though, sequences are percents, not counts
 
+num_seq <- nrow(filter(pitches, !is.na(pitch_seq)))
+
+top_seq <- c("4-Seam Fastball - 4-Seam Fastball", 
+             "4-Seam Fastball - Slider", "Slider - Slider", 
+             "Slider - 4-Seam Fastball", "Sinker - Sinker", 
+             "2-Seam Fastball - 2-Seam Fastball",
+             "4-Seam Fastball - Changeup")
+
+top_seq %<>% fct_relevel("4-Seam Fastball - 4-Seam Fastball", 
+                         "4-Seam Fastball - Slider", "Slider - Slider",
+                         "Slider - 4-Seam Fastball", "Sinker - Sinker", 
+                         "2-Seam Fastball - 2-Seam Fastball",
+                         "4-Seam Fastball - Changeup")
+
 pitches %>% 
   filter(!is.na(pitch_seq)) %>% 
   group_by(pitch_seq) %>% 
-  summarise(pct = n() / nrow(filter(pitches, !is.na(pitch_seq)))) %>%
+  summarise(pct = n() / num_seq) %>%
   arrange(desc(pct)) %>%
-  slice(1:10) %>% 
+  slice(1:7) %>% 
   mutate(pitch_seq = fct_reorder(pitch_seq, pct, .desc = TRUE)) %>% 
   ggplot() +
-  geom_bar(aes(x = pitch_seq, y = pct), stat = "identity") +
+  geom_bar(aes(x = pitch_seq, y = pct, fill = top_seq), stat = "identity") +
   xlab("Pitch Sequence") +
   ylab("Percentage of All Sequences") +
   labs(title = "Most Popular MLB Pitch Sequences",
@@ -147,6 +161,78 @@ pitches %>%
        caption = "Data via Baseball Savant",
        fill = "Top Sequences") +
   theme_classic()
+
+ggsave("shiny_initial/www/pctsequences.png")
+
+# now we'll replicate the above code, but compare sequence freqency by SP/RP
+# we'll create a new tibble combining info on SP and RP
+# filtering so that the only sequences we look at occur at least 3% of the time
+# we also reorder the sequences by average occurrence percentage
+
+sp_length <- pitches %>% 
+  filter(!is.na(pitch_seq), starter == 1) %>% 
+  nrow()
+
+rp_length <- pitches %>% 
+  filter(!is.na(pitch_seq), starter == 0) %>% 
+  nrow()
+
+sp_data <- pitches %>%
+  filter(!is.na(pitch_seq), starter == 1) %>% 
+  group_by(pitch_seq) %>% 
+  summarize(pct_sp = n() / sp_length) %>% 
+  filter(pct_sp >= .01) %>% 
+  arrange(desc(pct_sp))
+
+rp_data <- pitches %>% 
+  filter(!is.na(pitch_seq), starter == 0) %>% 
+  group_by(pitch_seq) %>% 
+  summarize(pct_rp = n() / rp_length) %>% 
+  filter(pct_rp >= .01) %>% 
+  arrange(desc(pct_rp))
+
+pitcher_data <- sp_data %>% 
+  inner_join(rp_data, by = "pitch_seq") %>% 
+  filter(pct_sp >= .03, pct_rp >= .03) %>%
+  pivot_longer(cols = starts_with("pct"),
+               names_to = "starter",
+               names_prefix = "pct_",
+               values_to = "pct")
+
+pitcher_data %>% 
+  mutate(pitch_seq = fct_reorder(pitch_seq, pct, .desc = TRUE)) %>% 
+  ggplot() +
+  geom_bar(aes(x = pitch_seq, y = pct, fill = starter), 
+           stat = "identity", position = "dodge") +
+  xlab("Pitch Sequence") +
+  ylab("Percentage of RP or SP Sequences") +
+  labs(title = "Most Popular MLB Pitch Sequences, by Pitcher Type",
+       subtitle = "From 2015 through 2019",
+       caption = "Data via Baseball Savant",
+       fill = "Pitcher Type") +
+  theme_classic() +
+  scale_fill_hue(labels = c("Reliever", "Starter"))
+
+ggsave("shiny_initial/www/sp_rp_sequences.png")
+
+# let's compare pitch types to see how they've changed over time
+# we'll look at slider, two-seams, sinkers, changeups, curveballs, and cutters
+
+pitches %>% 
+  filter(pitch_type %in% c("SL", "FT", "SI", "CH", "CU", "FC")) %>% 
+  group_by(pitch_name, game_year) %>% 
+  summarise(pct = n() / nrow(pitches[pitches$game_year == game_year,])) %>%
+  ggplot() +
+  geom_line(aes(x = game_year, y = pct, color = pitch_name)) +
+  xlab("Year") +
+  ylab("Percentage of All Pitches") +
+  labs(title = "Evolution of Common MLB Pitches",
+       subtitle = "From 2015 through 2019, 4-Seam Fastballs Excluded",
+       caption = "Data via Baseball Savant",
+       color = "Pitches") +
+  theme_classic()
+
+ggsave("shiny_initial/www/pctpitches.png")
 
 ```
 

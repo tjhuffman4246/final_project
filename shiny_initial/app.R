@@ -4,9 +4,59 @@ ui <- navbarPage("Final Project",
                  tabPanel("Home",
                           titlePanel("Effects of Pitch Sequencing on MLB Pitcher Success"),
                           mainPanel(
-                            p("This is the initial Shiny app, featuring the graphic from Milestone 5. 
-                              More content will be added as the project progresses."),
-                            img(src = "topsequences.png", height = 700, width = 700)
+                            p("There's more data in baseball than ever now. Whether you're interested 
+                              in the probability a Mike Trout line drive will fall for a hit, the top 
+                              speed Ronald Acuña Jr. reaches going from first to third, or the precise 
+                              arm slot at which Josh Hader releases each fastball, these measurements 
+                              are all available at quite literally the push of a button. Yet as the 
+                              game becomes viewed by many as a series of sequences and estimations, 
+                              there remain questions about what hasn't yet been quantified."
+                              ),
+                            p("Some of it is, of course, not truly measurable - one can't reduce a 
+                              great teammate's impact on the clubhouse to fractions of a win or assess 
+                              how many points of stolen base percentage a savvy first-base coach might 
+                              add - but there's still room to improve analysis in certain areas. One of
+                              these is pitch sequencing: how to optimize variation in pitch type, speed,
+                              and location."
+                              ),
+                            p("Using data from Baseball Savant, I set out to explore what sequencing in
+                              MLB looks like, how it's changed over time, and whether it has significant
+                              predictive on plate appearance outcomes beyond what one might expect. One
+                              can play around with this modeling aspect in the Explore page and read more
+                              about it in the Model section."
+                              ), 
+                            p("To set the stage, I'll quickly run through some descriptive analysis of the
+                              data. The bar chart below shows the most commonly used sequences in the MLB
+                              over the five years Statcast has been in place in ballparks (with a sequence
+                              here defined as the pitch types thrown on consecutive pitches in the same
+                              plate appearance)."
+                              ),
+                            img(src = "pctsequences.png", height = 500, width = 800),
+                            p("The double-fastball sequence dominates this distribution, which is expected: 
+                              four-seam fastballs have accounted for 35.6% of all pitches thrown, over twice
+                              as many as the next closest pitch type (sliders, at 16.1%). Let's see whether 
+                              these lesser-used pitches have become more or less used over time:"
+                              ),
+                            img(src = "pctpitches.png", height = 600, width = 600),
+                            p("It's clear sliders, while always popular, have seen their usage skyrocket in
+                              recent seasons, while the past two years have seen the two-seam fastball drop
+                              from the second-most used pitch to the fourth, trailing the changeup and the
+                              curveball. Sinkers, a fastball variant often grouped together with the
+                              two-seamer, have also decreased in frequency, with these two together close to
+                              being overtaken by the cut fastball. Now let's revisit our initial sequence
+                              distribution, separating the data into starters and relievers, to see whether
+                              one group or the other is adopting sequences that may be leading this changing
+                              league-wide pitch mix."),
+                            img(src = "sp_rp_sequences.png", height = 600, width = 600),
+                            p("This indicates that relivers generally tend to have a less diversified pitch
+                              portfolio in comparison to starters, relying more heavily on sequences
+                              involving four-seam fastballs and sliders and less heavily on those with
+                              two-seamers and changeups. This makes sense intuitively, given that reliever
+                              outings are typically on the order of one to two innings and thus would be
+                              expected to rely more heavily on pitch quality to defeat opposing hitters and
+                              less on pitch mix and variation over the course of an extended appearance."),
+                            p("That's my broad introduction to pitch sequencing - look at the rest of
+                              this site to learn more!")
                             )
                           ),
                  tabPanel("Explore",
