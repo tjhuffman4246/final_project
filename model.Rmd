@@ -85,6 +85,7 @@ pitches %<>%
 # does the same for runners on base
 # we also create an indicator for whether the pitcher/batter are same-handed
 # we also turn the pitch sequences into factors here using fct_lump()
+# does the same thing with pitches themselves
 
 pitches %<>% 
   group_by(game_pk, inning_topbot) %>% 
@@ -99,9 +100,32 @@ pitches %<>%
          stand = as_factor(stand),
          p_throws = as_factor(p_throws),
          pitch_seq = as_factor(pitch_seq), 
-         pitch_seq = fct_lump(pitch_seq, prop = 0.02))
+         pitch_seq = fct_lump(pitch_seq, prop = 0.02),
+         pitch_type = as_factor(pitch_type), 
+         pitch_type = fct_lump(pitch_type, prop = 0.02))
+
+# we do more factor work with the description of different events
+# grouping into ball, called strike, swinging strike, foul, and in play
+# we create vectors categorizing each of these
+# and then we mutate our tibble of pitches
+
+ball <- c("ball", "blocked_ball", "intent_ball", "hit_by_pitch", "pitchout")
+strike <- c("called_strike", "swinging_strike", "swinging_strike_blocked", 
+            "missed_bunt", "swinging_pitchout", "foul", "foul_bunt", 
+            "foul_tip", "foul_pitchout", "bunt_foul_tip")
+in_play <- c("hit_into_play", "hit_into_play_no_out", "hit_into_play_score",
+             "pitchout_hit_into_play_score")
+
+pitches %<>% 
+  mutate(description = case_when(description %in% ball ~ "ball",
+                                 description %in% strike ~ "strike", 
+                                 description %in% in_play ~ "in_play",
+                                 TRUE ~ as.character(description)),
+         description = as_factor(description))
 
 # creates a smaller sample dataset w/ data from random 1,000 games
+
+set.seed(1005)
 
 pitch_sample <- pitches %>% 
   filter(game_pk %in% c(sample(pull(select(pitches, game_pk)), 1000)))
@@ -114,14 +138,16 @@ pitch_sample <- pitches %>%
 # a wOBA denominator of 1 is essentially all plays except HBP and sacrifices
 
 pitches_mod <- pitches %>%
-  filter(!is.na(pitch_seq), woba_denom == 1)
+#  filter(!is.na(pitch_seq), woba_denom == 1)
+  filter(!is.na(pitch_seq))
 
 pitch_sample_mod <- pitch_sample %>% 
-  filter(!is.na(pitch_seq), woba_denom == 1)
+#  filter(!is.na(pitch_seq), woba_denom == 1)
+  filter(!is.na(pitch_seq))
 
 ```
 
-In general, we want to create a model to predict weighted on-base average (wOBA - a measurement of overall offensive performance) from the available data, and to see the degree to which sequencing affects these predictions. To do this, we'll create several models, which we'll save as `formula` objects in R.
+In general, we want to create a model to predict pitch outcome from the available data, and to see the degree to which sequencing affects these predictions. To do this, we'll create several models, which we'll save as `formula` objects in R.
 
 ```{r model_prep}
 
@@ -129,13 +155,22 @@ In general, we want to create a model to predict weighted on-base average (wOBA 
 
 # this model predicts wOBA from pitch sequence
 
-seq_form <- formula(woba_value ~ pitch_seq)
+# seq_form <- formula(woba_value ~ pitch_seq)
+
+# instead, our formula will predict outcome, not wOBA
+
+seq_form <- formula(description ~ pitch_seq)
+
+# this model predicts pitch outcome using pitch type and sequnce
+# this will see the effect that sequencing has beyond the pitch type
+
+pitch_form <- update(seq_form, ~ . + pitch_type)
 
 # this model adjusts the above to incorporate handedness of batter and pitcher
 # including an interaction term for same-handedness
 # also includes variable for whether player is a starter
 
-matchup_form <- formula(woba_value ~ pitch_seq * same_handed + 
+matchup_form <- formula(description ~ pitch_seq + pitch_type * same_handed + 
                           stand + p_throws + starter)
 
 # this model includes contextual information
@@ -154,19 +189,21 @@ detailed_form <- update(context_form, ~ . + release_speed + pfx_x + pfx_z +
 # here, we combine all these models into a single tibble
 
 pitch_formulas <- tibble(formula = c(seq_form,
+                                     pitch_form,
                                      matchup_form,
                                      context_form,
                                      detailed_form),
                          group = c("Sequence model",
+                                   "Pitch type model",
                                    "Matchup model",
                                    "Context model",
                                    "Detailed model"))
 
-# create specification for linear regression
+# create specification for classification
 
-lm_spec <- linear_reg() %>%
-  set_engine("lm") %>%
-  set_mode("regression") 
+rf_spec <- rand_forest() %>%
+  set_engine("randomForest") %>%
+  set_mode("classification") 
 
 ```
 
@@ -175,6 +212,11 @@ Importantly, we also split the data into train and test sets - these are subsets
 ```{r train_test}
 
 # split model into train and test sets
+# first cleans data to exclude NA values
+
+pitch_sample_mod %<>% 
+  filter(!is.na(release_speed & pfx_x & pfx_z & plate_x & plate_z &
+                  speed_diff & loc_diff_x & loc_diff_z))
 
 set.seed(1005)
 
@@ -184,37 +226,92 @@ pitch_sample_test <- testing(pitch_sample_split)
 
 ```
 
-We use cross-validation to compare and analyze the different models.
+```{r run_models}
 
-```{r cv}
+# more PPBDS code
+# cross-validation w/ RF took an incredible amount of time
+# and data is big enough that CV isn't as important
 
-# creates 5 folds for cross-validation
+fit_rf_split <- function(formula, train, test) {
+  rf_spec %>%
+    fit(formula, data = train) %>%
+    predict(new_data = test) %>%
+    bind_cols(test)
+}
 
-set.seed(1005)
+pitch_sample_test_preds <- pitch_formulas %>%
+  mutate(preds = map(formula, ~ fit_rf_split(., pitch_sample_train, 
+                                             pitch_sample_test))) %>%
+  unnest(preds)
 
-pitch_sample_folds <- pitch_sample_train %>%
-  vfold_cv(v = 5)
-
-# uses PPBDS for pretty much all of this
-# particularly, we map the fit_resamples() function to each formula
-
-folds_metrics <- pitch_formulas %>%
-  mutate(metrics = map(formula, 
-                       ~ fit_resamples(lm_spec, 
-                                       preprocessor = .,
-                                       resamples = pitch_sample_folds) %>%
-                         collect_metrics()))
-
-# now let's check out our results!
-
-folds_metrics %>%
-  mutate(mean_rmse = map_dbl(metrics, 
-                             ~ filter(., .metric == "rmse") %>% pull(mean)),
-         se_rmse = map_dbl(metrics, 
-                           ~ filter(., .metric == "rmse") %>% pull(std_err))) %>%
-  select(group, mean_rmse, se_rmse) %>% 
+pitch_sample_test_preds %>% 
+  group_by(group) %>% 
+  accuracy(truth = description, estimate = .pred_class) %>% 
   gt()
 
 ```
 
-From our initial cross-validation process on our test set, we see that as we add more variables, our MSE improves. 
+
+
+
+We use cross-validation to compare and analyze the different models.
+
+```{r cv, eval = FALSE}
+
+#############
+# this code used when doing linear regression, not classification
+#############
+
+# creates 5 folds for cross-validation
+
+#set.seed(1005)
+
+#pitch_sample_folds <- pitch_sample_train %>%
+#  vfold_cv(v = 5)
+
+# uses PPBDS for pretty much all of this
+# particularly, we map the fit_resamples() function to each formula
+
+#folds_metrics <- pitch_formulas %>%
+#  mutate(metrics = map(formula, 
+#                       ~ fit_resamples(rf_spec, 
+#                                       preprocessor = .,
+#                                       resamples = pitch_sample_folds) %>%
+#                         collect_metrics()))
+
+# now let's check out our results!
+
+# folds_metrics %>%
+#  mutate(mean_acc = map_dbl(metrics, 
+#                             ~ filter(., .metric == "accuracy") %>% 
+#                              pull(mean)),
+#         se_acc = map_dbl(metrics, 
+#                           ~ filter(., .metric == "accuracy") %>% 
+#                            pull(std_err))) %>%
+#  select(group, mean_acc, se_acc) %>% 
+#  gt()
+
+```
+
+From our initial cross-validation process on our test set, we see that as we add more variables, our MSE improves, though our results are divided into two similar groups - there's little difference between the basic sequence-based model and the model including matchups, and while both the context-inclusive and detailed models do better than these first two, the detailed model does only slightly better than the context one. To decide between these latter two models, we'll fit them on the test set.
+
+```{r last_fit}
+
+# uses last_fit() function to calculate the final fit of these two models
+
+context_final_fit <- last_fit(rf_spec, context_form, split = pitch_sample_split)
+detailed_final_fit <- last_fit(rf_spec, detailed_form, split = pitch_sample_split)
+
+# now we inspect and compare the metrics to decide on our final model
+
+context_final_fit$.metrics[[1]] %>% 
+  gt()
+
+detailed_final_fit$.metrics[[1]] %>% 
+  gt()
+
+```
+
+From these two models, we see that 
+
+

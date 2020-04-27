@@ -10,7 +10,12 @@ ui <- navbarPage("Final Project",
                             )
                           ),
                  tabPanel("Explore",
-                          titlePanel("Effects of Pitch Sequencing on MLB Pitcher Success"),
+                          titlePanel("Explore"),
+                          mainPanel(
+                            p("More to be added soon!")
+                          )),
+                 tabPanel("Model",
+                          titlePanel("Model"),
                           mainPanel(
                             
                             )
@@ -79,13 +84,7 @@ ui <- navbarPage("Final Project",
                                  href = "https://github.com/tjhuffman4246/final_project",
                                  target = "_blank"))
                             
-                          )),
-                 tabPanel("More",
-                          titlePanel("More"),
-                          mainPanel(
-                            p("More to be added soon!")
                           ))
-   
 )
 
 server <- function(input, output) {
