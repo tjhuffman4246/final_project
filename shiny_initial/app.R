@@ -31,7 +31,7 @@ ui <- navbarPage("Final Project",
                               here defined as the pitch types thrown on consecutive pitches in the same
                               plate appearance)."
                               ),
-                            img(src = "pctsequences.png", height = 400, width = 650),
+                            img(src = "pctsequences.png", height = 600, width = 600),
                             p("The double-fastball sequence dominates this distribution, which is expected: 
                               four-seam fastballs have accounted for 35.6% of all pitches thrown, over twice
                               as many as the next closest pitch type (sliders, at 16.1%). Let's see whether 
