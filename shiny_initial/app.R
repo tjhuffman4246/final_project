@@ -31,13 +31,13 @@ ui <- navbarPage("Final Project",
                               here defined as the pitch types thrown on consecutive pitches in the same
                               plate appearance)."
                               ),
-                            img(src = "pctsequences.png", height = 500, width = 800),
+                            img(src = "pctsequences.png", height = 400, width = 650),
                             p("The double-fastball sequence dominates this distribution, which is expected: 
                               four-seam fastballs have accounted for 35.6% of all pitches thrown, over twice
                               as many as the next closest pitch type (sliders, at 16.1%). Let's see whether 
                               these lesser-used pitches have become more or less used over time:"
                               ),
-                            img(src = "pctpitches.png", height = 600, width = 600),
+                            img(src = "pctpitches.png", height = 400, width = 600),
                             p("It's clear sliders, while always popular, have seen their usage skyrocket in
                               recent seasons, while the past two years have seen the two-seam fastball drop
                               from the second-most used pitch to the fourth, trailing the changeup and the
@@ -47,7 +47,7 @@ ui <- navbarPage("Final Project",
                               distribution, separating the data into starters and relievers, to see whether
                               one group or the other is adopting sequences that may be leading this changing
                               league-wide pitch mix."),
-                            img(src = "sp_rp_sequences.png", height = 600, width = 600),
+                            img(src = "sp_rp_sequences.png", height = 375, width = 600),
                             p("This indicates that relivers generally tend to have a less diversified pitch
                               portfolio in comparison to starters, relying more heavily on sequences
                               involving four-seam fastballs and sliders and less heavily on those with

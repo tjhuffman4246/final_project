@@ -155,7 +155,7 @@ pitches %>%
   ggplot() +
   geom_bar(aes(x = pitch_seq, y = pct, fill = top_seq), stat = "identity") +
   xlab("Pitch Sequence") +
-  ylab("Percentage of All Sequences") +
+  ylab("Fraction of All Sequences") +
   labs(title = "Most Popular MLB Pitch Sequences",
        subtitle = "From 2015 through 2019",
        caption = "Data via Baseball Savant",
@@ -205,7 +205,7 @@ pitcher_data %>%
   geom_bar(aes(x = pitch_seq, y = pct, fill = starter), 
            stat = "identity", position = "dodge") +
   xlab("Pitch Sequence") +
-  ylab("Percentage of RP or SP Sequences") +
+  ylab("Fraction of RP or SP Sequences") +
   labs(title = "Most Popular MLB Pitch Sequences, by Pitcher Type",
        subtitle = "From 2015 through 2019",
        caption = "Data via Baseball Savant",
@@ -225,7 +225,7 @@ pitches %>%
   ggplot() +
   geom_line(aes(x = game_year, y = pct, color = pitch_name)) +
   xlab("Year") +
-  ylab("Percentage of All Pitches") +
+  ylab("Fraction of All Pitches") +
   labs(title = "Evolution of Common MLB Pitches",
        subtitle = "From 2015 through 2019, 4-Seam Fastballs Excluded",
        caption = "Data via Baseball Savant",
