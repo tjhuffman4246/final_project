@@ -1,0 +1,152 @@
+---
+title: "Graphics"
+author: "Tate Huffman"
+date: "4/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = FALSE)
+library(lubridate)
+library(gt)
+library(magrittr)
+library(forcats)
+library(tidyverse)
+```
+
+## Creating Graphics
+
+We want to create several graphics for the homepage of our Shiny app. Most of this will be macro analysis, an overview of the data as a whole, but some more granular information will be used.
+
+```{r setup}
+
+# this is all the code we've been using to read in and clean our data
+
+# copying and altering most of code from explore.Rmd
+
+load_files <- function(path) { 
+  files <- dir(path, pattern = "data_\\d{4}.csv", full.names = TRUE)
+  bind_rows(map_df(files, read_csv))
+}
+
+pitches <- load_files("data")
+
+# creates pitch sequence
+
+pitches %<>% mutate(pitch_seq = ifelse(!(pitch_number == 1 |
+                                        is.na(pitch_type) |
+                                        is.na(lag(pitch_type))), 
+                                      paste0(lag(pitch_type), pitch_type),
+                                      NA))
+
+# adds in batter names, manually inputting unknown players
+
+players <- read_csv("players.csv", col_types = cols()) %>% 
+  select(mlb_id, mlb_name)
+
+pitches %<>% 
+  left_join(players, by = c("batter" = "mlb_id")) %>% 
+  rename(batter_name = "mlb_name", pitcher_name = "player_name") %>% 
+  mutate(batter_name = case_when(batter == 121347 ~ "Alex Rodriguez",
+                                 batter == 116338 ~ "Torii Hunter",
+                                 batter == 133380 ~ "Aramis Ramirez",
+                                 batter == 120074 ~ "David Ortiz",
+                                 batter == 150229 ~ "A.J. Pierzynski",
+                                 batter == 218596 ~ "Tim Hudson",
+                                 batter == 150359 ~ "A.J. Burnett",
+                                 batter == 150302 ~ "Jason Marquis",
+                                 batter == 329092 ~ "Randy Choate",
+                                 batter == 279824 ~ "Mark Buehrle",
+                                 batter == 605228 ~ "Jose Fernandez",
+                                 batter == 115629 ~ "LaTroy Hawkins",
+                                 TRUE ~ as.character(batter_name)))
+
+# adding more pitch info in comparison to previous pitches
+
+pitches %<>% 
+  mutate(speed_diff = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             release_speed - lag(release_speed), NA),
+         loc_diff_x = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             plate_x - lag(plate_x), NA),
+         loc_diff_z = ifelse(!(pitch_number == 1 | 
+                                 is.na(pitch_type) | 
+                                 is.na(lag(pitch_type))),
+                             plate_z - lag(plate_z), NA),
+         loc_diff_total = ifelse(!(pitch_number == 1 | 
+                                     is.na(pitch_type) | 
+                                     is.na(lag(pitch_type))),
+                                 sqrt(loc_diff_x^2 + loc_diff_z^2), NA))
+
+# create binary indicator for whether pitcher was the starter
+# also creates variable for score difference
+# makes top/bottom of an inning a binary variable
+# does the same for runners on base
+# we also create an indicator for whether the pitcher/batter are same-handed
+# we also turn the pitch sequences into factors here using fct_lump()
+# does the same thing with pitches themselves
+
+pitches %<>% 
+  group_by(game_pk, inning_topbot) %>% 
+  mutate(starter = ifelse(pitcher_name == first(pitcher_name), 1, 0)) %>% 
+  ungroup() %>% 
+  mutate(score_diff = fld_score - bat_score,
+         inning_topbot = ifelse(inning_topbot == "Top", 1, 0),
+         on_3b = ifelse(is.na(on_3b), 0, 1),
+         on_2b = ifelse(is.na(on_2b), 0, 1),
+         on_1b = ifelse(is.na(on_1b), 0, 1),
+         same_handed = ifelse(stand == p_throws, 1, 0),
+         stand = as_factor(stand),
+         p_throws = as_factor(p_throws),
+         pitch_seq = as_factor(pitch_seq),
+         pitch_type = as_factor(pitch_type), 
+         pitch_type = fct_lump(pitch_type, prop = 0.02))
+
+# we do more factor work with the description of different events
+# grouping into ball, called strike, swinging strike, foul, and in play
+# we create vectors categorizing each of these
+# and then we mutate our tibble of pitches
+
+ball <- c("ball", "blocked_ball", "intent_ball", "hit_by_pitch", "pitchout")
+strike <- c("called_strike", "swinging_strike", "swinging_strike_blocked", 
+            "missed_bunt", "swinging_pitchout", "foul", "foul_bunt", 
+            "foul_tip", "foul_pitchout", "bunt_foul_tip")
+in_play <- c("hit_into_play", "hit_into_play_no_out", "hit_into_play_score",
+             "pitchout_hit_into_play_score")
+
+pitches %<>% 
+  mutate(description = case_when(description %in% ball ~ "ball",
+                                 description %in% strike ~ "strike", 
+                                 description %in% in_play ~ "in_play",
+                                 TRUE ~ as.character(description)),
+         description = as_factor(description))
+
+```
+
+```{r sequences_overall}
+
+# this mostly replicates the code from Milestone 5
+# instead, though, sequences are percents, not counts
+
+pitches %>% 
+  filter(!is.na(pitch_seq)) %>% 
+  group_by(pitch_seq) %>% 
+  summarise(pct = n() / nrow(filter(pitches, !is.na(pitch_seq)))) %>%
+  arrange(desc(pct)) %>%
+  slice(1:10) %>% 
+  mutate(pitch_seq = fct_reorder(pitch_seq, pct, .desc = TRUE)) %>% 
+  ggplot() +
+  geom_bar(aes(x = pitch_seq, y = pct), stat = "identity") +
+  xlab("Pitch Sequence") +
+  ylab("Percentage of All Sequences") +
+  labs(title = "Most Popular MLB Pitch Sequences",
+       subtitle = "From 2015 through 2019",
+       caption = "Data via Baseball Savant",
+       fill = "Top Sequences") +
+  theme_classic()
+
+```
+
