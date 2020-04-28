@@ -1,11 +1,15 @@
 library(shiny)
 library(tidyverse)
 
-# combines pitch RDS files that were created in other files
-# this is because Git LFS can only take files up to 2 GB in size
+# options to try to enable usage of all data
+# unfortunately this didn't work, so we have to use sampled data
 
 options(shiny.maxRequestSize = 5000*1024^2)
 options(rsconnect.max.bundle.size = 5000*1024^2)
+
+# code to combine pitch RDS files that were created in other files
+# this is because Git LFS can only take files up to 2 GB in size
+# commented out code to create sample data
 
 #pitches_app <- readRDS("shiny_initial/pitches_early.rds") %>% 
 #   bind_rows(readRDS("shiny_initial/pitches_late.rds"))
@@ -98,7 +102,8 @@ ui <- navbarPage("Pitch Sequencing",
                               being overtaken by the cut fastball. Now let's revisit our initial sequence
                               distribution, separating the data into starters and relievers, to see whether
                               one group or the other is adopting sequences that may be leading this changing
-                              league-wide pitch mix."),
+                              league-wide pitch mix."
+                              ),
                             img(src = "sp_rp_sequences.png", height = 375, width = 600),
                             p("This indicates that relivers generally tend to have a less diversified pitch
                               portfolio in comparison to starters, relying more heavily on sequences
@@ -106,9 +111,11 @@ ui <- navbarPage("Pitch Sequencing",
                               two-seamers and changeups. This makes sense intuitively, given that reliever
                               outings are typically on the order of one to two innings, so they're expected
                               to rely more heavily on pitch quality to defeat opposing hitters and less
-                              on pitch mix and variation over the course of an extended appearance."),
+                              on pitch mix and variation over the course of an extended appearance."
+                              ),
                             p("That's my broad introduction to pitch sequencing - look at the rest of
-                              this site to learn more!")
+                              this site to learn more!"
+                              )
                             )
                             ),
                  
@@ -146,21 +153,26 @@ ui <- navbarPage("Pitch Sequencing",
                               pitch using a logistic regression model. Logistic regression is a form of 
                               categorical prediction as opposed to numeric prediction, so for these purposes I
                               wanted to see whether we'd be able to determine if a pitch was a ball, a strike,
-                              or hit into play based on given factors. To do this, I used three models:"), 
+                              or hit into play based on given factors. To do this, I used three models:"
+                              ), 
                             tags$ul(
                               tags$li("one using qualitative information about the pitch sequence and
                                       quantitative information about the pitch relative to the previous one 
-                                      (i.e., difference in speed)"),
+                                      (i.e., difference in speed)"
+                                      ),
                               tags$li("another with the same information as the first, but also incorporating
                                       quantitative information about the pitch itself (i.e., absolute speed in
-                                      addition to relative speed)"),
+                                      addition to relative speed)"
+                                      ),
                               tags$li("a model with all the information of the previous two, but now also 
                                       containing contextual information: the score, inning, number of outs,
-                                      count, etc.")
+                                      count, etc."
+                                      )
                               ),
                             p('Below is a sample of some of the predictions from this model, where
                               "description" is the event that occurred, and the other columns are the
-                              predictions for each model:'),
+                              predictions for each model:'
+                              ),
                             tableOutput("preds_standard"),
                             p("As you might notice, it seems as though each model is just predicting a ball or
                               a strike, and you'd be correct in this observation: it turns out that across
@@ -169,23 +181,27 @@ ui <- navbarPage("Pitch Sequencing",
                               for balls and strikes than are hit into play, this suggests pitches hit into
                               play aren't substantially different from those that aren't; it's just a matter of
                               whether the batter chooses to swing or not. Let's look at how accurate these
-                              models are via the fraction of pitch outcomes correctly predicted:"),
+                              models are via the fraction of pitch outcomes correctly predicted:"
+                              ),
                             tableOutput("acc_standard"),
                             p("Woof. These models are only right about half the time! To be fair, this is 
                               better than picking completely randomly - that would only succeed about a third
                               of the time - but this supports the previous theory that hitters throw a massive
                               wrench into our prediction abilities! But what if we altered the goals of the
-                              model?"),
+                              model?"
+                              ),
                             p("Let's make an assumption (ignoring every dad's favorite pun about assumptions 
                               in the process) that if a ball is hit into play, we can reasonably expect that 
                               it was thrown in the strike zone. This won't always be true, but more often than
                               not it most likely will be. So what if instead of predicting three outcomes, we
                               just tried to predict two - ball or strike? Let's turn any pitch where the ball
                               was hit into play into an automatic strike and check out what our predictions
-                              would look like in that situation:"),
+                              would look like in that situation:"
+                              ),
                             tableOutput("preds_simplified"),
                             p("This looks a bit more realistic. How does our accuracy look like in this 
-                              situation?"),
+                              situation?"
+                              ),
                             tableOutput("acc_simplified"),
                             p("Alright! This looks better. It's still not great - a more complex model would
                               likely have much higher accuracy - but as a first pass with a relatively
@@ -195,7 +211,8 @@ ui <- navbarPage("Pitch Sequencing",
                               model with more computational complexity could give a better glimpse into what
                               effects sequencing has, but from this model it does seem like there's a
                               significant connection between a pitch's characteristics relative to the previous
-                              one and the outcome of that pitch.")
+                              one and the outcome of that pitch."
+                              )
                             )
                             ),
                  
@@ -218,7 +235,8 @@ ui <- navbarPage("Pitch Sequencing",
                               comfortable using all available Statcast measurements. In order to 
                               properly handle the multiple gigabytes worth of data, I used Git LFS and 
                               a modified form of Petti's", code("scrape_statcast_savant"), "function in
-                              order to get the full five regular seasons of data."
+                              order to get the full five regular seasons of data. Unfortunately, shiny.io can't
+                              handle the entire dataset, so we're forced to use a sample of 500,000 pitches."
                             ),
                             p("In order to get player names for both pitchers and hitters, I had to use an
                               external (non-MLB) site to get MLB player ID numbers, which I found at the 
