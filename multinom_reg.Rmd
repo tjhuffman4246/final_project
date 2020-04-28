@@ -225,13 +225,25 @@ pitch_preds <- pitches_model %>%
            pull(.pred_class)) %>% 
   na.omit
 
-write_rds(pitch_preds, "shiny_initial/model_preds.rds")
+write_rds(pitch_preds, "shiny_initial/model_preds_standard.rds")
 
 accuracy <- tibble(sequence = mean(pitch_preds$sequence == pitch_preds$description),
                    pitch = mean(pitch_preds$pitch == pitch_preds$description),
                    context = mean(pitch_preds$context == pitch_preds$description))
 
-write_rds(accuracy, "shiny_initial/accuracy.rds")
+write_rds(accuracy, "shiny_initial/accuracy_standard.rds")
+
+pitch_preds_simplified <- pitch_preds %>% 
+  mutate(description = if_else(description == "in_play", "strike", as.character(description)))
+
+write_rds(pitch_preds_simplified, "shiny_initial/model_preds_simplified.rds")
+
+accuracy_simplified <- tibble(
+  sequence = mean(pitch_preds_simplified$sequence == pitch_preds_simplified$description),
+  pitch = mean(pitch_preds_simplified$pitch == pitch_preds_simplified$description),
+  context = mean(pitch_preds_simplified$context == pitch_preds_simplified$description))
+
+write_rds(accuracy_simplified, "shiny_initial/accuracy_simplified.rds")
 
 ```
 

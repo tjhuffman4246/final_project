@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 library(tidyverse)
 
 pitches_app <- readRDS("pitches_early.rds") %>% 
@@ -19,6 +20,12 @@ merged <- full_join(hitters, pitchers, by = c("batter_name" = "pitcher_name")) %
          count_b = replace_na(count_b, 0),
          player_type = ifelse(count_p > count_b, "pitcher", "batter")) %>% 
   rename(name = "batter_name")
+
+predictions_standard <- readRDS("model_preds_standard.rds")
+accuracy_standard <- readRDS("accuracy_standard.rds")
+predictions_simplified <- readRDS("model_preds_simplified.rds")
+accuracy_simplified <- readRDS("accuracy_simplified.rds")
+
 
 ui <- navbarPage("Final Project",
                  
@@ -110,7 +117,35 @@ ui <- navbarPage("Final Project",
                  tabPanel("Model",
                           titlePanel("Model"),
                           mainPanel(
-                            
+                            p("For this project's modeling component, I wanted to predict outcome of a given
+                              pitch using a logistic regression model. Logistic regression is a form of 
+                              categorical prediction as opposed to numeric prediction, so for these purposes I
+                              wanted to see whether we'd be able to determine if a pitch was a ball, a strike,
+                              or hit into play based on given factors. To do this, I used three models:"), 
+                            tags$ul(
+                              tags$li("one using qualitative information about the pitch sequence and
+                                     quantitative information about the pitch relative to the previous one 
+                                     (i.e., difference in speed)"),
+                              tags$li("another with the same information as the first, but also incorporating
+                                      quantitative information about the pitch itself (i.e., absolute speed in
+                                      addition to relative speed"),
+                              tags$li("a model with all the information of the previous two, but now also 
+                                      containing contextual information: the score, inning, number of outs,
+                                      count, etc.")
+                              ),
+                            p('Below is a sample of some of the predictions from this model, where
+                              "description" is the event that occurred, and the other columns are the
+                              predictions for each model:'),
+                            tableOutput("preds_standard"),
+                            p("As you might notice, it seems as though each model is just predicting a ball or
+                              a strike, and you'd be correct in this observation: it turns out that across
+                              these three models, with over 1.7 million pitches to predict, only four times
+                              was a pitch predicted to be hit in play. Given that many more pitches are taken
+                              for balls and strikes than are hit into play, this suggests pitches hit into
+                              play aren't substantially different from those that aren't; it's just a matter of
+                              whether the batter chooses to swing or not. Let's look at how accurate these
+                              models are:"),
+                            tableOutput("acc_standard")
                           )
                  ),
                  
@@ -208,6 +243,14 @@ server <- function(input, output) {
            caption = "Data via Baseball Savant") +
       theme_classic() +
       theme(legend.position = "none")
+  })
+  
+  output$preds_standard <- renderTable({
+    sample_n(predictions_standard, 8)
+  })
+  
+  output$acc_standard <- renderTable({
+    accuracy_standard
   })
   
 }
