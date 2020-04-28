@@ -4,6 +4,22 @@ library(tidyverse)
 pitches_app <- readRDS("pitches_early.rds") %>% 
   bind_rows(readRDS("pitches_late.rds"))
 
+pitchers <- pitches_app %>% 
+  group_by(pitcher_name) %>% 
+  summarize(count_p = n()) %>% 
+  arrange(desc(count_p))
+
+hitters <- pitches_app %>% 
+  group_by(batter_name) %>% 
+  summarize(count_b = n()) %>% 
+  arrange(desc(count_b))
+
+merged <- full_join(hitters, pitchers, by = c("batter_name" = "pitcher_name")) %>% 
+  mutate(count_p = replace_na(count_p, 0),
+         count_b = replace_na(count_b, 0),
+         player_type = ifelse(count_p > count_b, "pitcher", "batter")) %>% 
+  rename(name = "batter_name")
+
 ui <- navbarPage("Final Project",
                  
                  tabPanel("Home",
@@ -72,9 +88,20 @@ ui <- navbarPage("Final Project",
                  tabPanel("Explore",
                           titlePanel("Explore"),
                           sidebarPanel(
-                            radioButtons("player_type", "Player Type", c("Batter", "Pitcher")),
-                            uiOutput("player_name"),
-                            uiOutput("year")
+                            selectInput("player_name", "Player Name", merged %>% pull(name) %>% sort()),
+                            h3("Common Pitches"),
+                            tags$ul(
+                              tags$li("FF: Four-Seam Fastball"),
+                              tags$li("FT: Two-Seam Fastball"),
+                              tags$li("SI: Sinker"),
+                              tags$li('FC: Cut Fastball ("Cutter")'),
+                              tags$li('FS: Split-Fingered Fastball ("Splitter")'),
+                              tags$li("SL: Slider"),
+                              tags$li("CH: Changeup"),
+                              tags$li("CU: Curveball"),
+                              tags$li("KC: Knuckle-Curve"),
+                              tags$li("KN: Knuckleball")
+                            )
                           ),
                           mainPanel(
                             plotOutput("seq_distr_plot")
@@ -150,59 +177,38 @@ ui <- navbarPage("Final Project",
                             h4(a("Link to GitHub Repository",
                                  href = "https://github.com/tjhuffman4246/final_project",
                                  target = "_blank"))
-                            
-                            ))
                             )
+                          )
+                 )
 
 server <- function(input, output) {
-  output$player_name <- renderUI({
-    selectInput("player_names", "Player", 
-                pitches_app %>% 
-                  group_by(!!sym(paste0(tolower(input$player_type), "_name"))) %>% 
-                  filter(n() >= 200) %>% 
-                  select(!!sym(paste0(tolower(input$player_type), "_name"))) %>% 
-                  pull() %>% 
-                  unique() %>% 
-                  sort()
-                )
-    })
-  output$year <- renderUI({
-    checkboxGroupInput("year", "Year", 
-                       pitches_app %>% 
-                         filter(!!sym(paste0(tolower(input$player_type), "_name")) == output$player_name) %>% 
-                         group_by(year) %>% 
-                         filter(n() >= 50) %>% 
-                         select(year) %>% 
-                         pull() %>% 
-                         sort()
-                       )
-    })
+  
   output$seq_distr_plot <- renderPlot({
-    num_seq <- pitches_app %>% 
-      filter(!!sym(paste0(tolower(input$player_type), "_name")) == output$player_name,
+    numseq <- pitches_app %>% 
+      filter(!!sym(paste0((merged %>% filter(name == input$player_name) %>% select(player_type) %>% pull()), 
+                          "_name")) == input$player_name, 
              !is.na(pitch_seq)) %>% 
       nrow()
     
-    text_title <- paste0(output$player_name, " Most Popular Pitch Sequences")
-    text_subtitle <- paste0("In ", output$year, " as a ", input$player_type)
+    title_text <- paste0(input$playername, " Pitch Sequences")
     
     pitches_app %>% 
-      filter(!!sym(paste0(tolower(input$player_type), "_name")) == output$player_name,
+      filter(!!sym(paste0((merged %>% filter(name == input$player_name) %>% select(player_type) %>% pull()), 
+                                 "_name")) == input$player_name,
              !is.na(pitch_seq)) %>% 
       group_by(pitch_seq) %>% 
-      summarise(pct = n() / num_seq) %>%
-      arrange(desc(pct)) %>%
-      slice(1:5) %>%
-      mutate(pitch_seq = fct_reorder(pitch_seq, pct, .desc = TRUE)) %>% 
-      ggplot() +
-      geom_bar(aes(x = pitch_seq, y = pct), stat = "identity") +
+      summarize(pct = n() / numseq) %>% 
+      slice(1:7) %>% 
+      ggplot(aes(x = pitch_seq, y = pct, color = pitch_seq)) +
+      geom_bar(stat = "identity") +
       xlab("Pitch Sequence") +
       ylab("Fraction of All Sequences") +
-      labs(title = text_title,
-           subtitle = text_subtitle,
+      labs(title = title_text,
+           subtitle = "Over All Multi-Pitch Plate Appearances Since 2015",
            caption = "Data via Baseball Savant") +
       theme_classic()
   })
+  
 }
 
 
