@@ -4,8 +4,17 @@ library(tidyverse)
 # combines pitch RDS files that were created in other files
 # this is because Git LFS can only take files up to 2 GB in size
 
-pitches_app <- readRDS("pitches_early.rds") %>% 
-  bind_rows(readRDS("pitches_late.rds"))
+options(shiny.maxRequestSize = 5000*1024^2)
+options(rsconnect.max.bundle.size = 5000*1024^2)
+
+#pitches_app <- readRDS("shiny_initial/pitches_early.rds") %>% 
+#   bind_rows(readRDS("shiny_initial/pitches_late.rds"))
+
+#pitches_app %>% 
+#  sample_n(500000) %>% 
+#  write_rds("shiny_initial/pitches_sample.rds")
+
+pitches_app <- readRDS("pitches_sample.rds")
 
 # this code classifies players as either pitchers or hitters
 # creates a merged dataset with number of pitches as a pitcher or hitter
@@ -67,7 +76,7 @@ ui <- navbarPage("Pitch Sequencing",
                               can read more about this in the Model section, while the Explore tab gives a
                               glimpse of what sequences different players have used (if they're pitchers) or
                               experienced (as hitters)."
-                            ), 
+                              ), 
                             p("To set the stage, I'll quickly run through some descriptive analysis of the
                               data. The bar chart below shows the most commonly used sequences in the MLB
                               over the five years Statcast has been in place in ballparks (with a sequence
@@ -101,11 +110,11 @@ ui <- navbarPage("Pitch Sequencing",
                             p("That's my broad introduction to pitch sequencing - look at the rest of
                               this site to learn more!")
                             )
-                          ),
+                            ),
                  
                  # this tab allows the user to see the most common sequences by player
                  # also gives information about common pitches that might pop up
-
+                 
                  tabPanel("Explore",
                           titlePanel("Explore"),
                           sidebarPanel(
@@ -140,8 +149,8 @@ ui <- navbarPage("Pitch Sequencing",
                               or hit into play based on given factors. To do this, I used three models:"), 
                             tags$ul(
                               tags$li("one using qualitative information about the pitch sequence and
-                                     quantitative information about the pitch relative to the previous one 
-                                     (i.e., difference in speed)"),
+                                      quantitative information about the pitch relative to the previous one 
+                                      (i.e., difference in speed)"),
                               tags$li("another with the same information as the first, but also incorporating
                                       quantitative information about the pitch itself (i.e., absolute speed in
                                       addition to relative speed)"),
@@ -187,8 +196,8 @@ ui <- navbarPage("Pitch Sequencing",
                               effects sequencing has, but from this model it does seem like there's a
                               significant connection between a pitch's characteristics relative to the previous
                               one and the outcome of that pitch.")
-                          )
-                 ),
+                            )
+                            ),
                  
                  tabPanel("About",
                           titlePanel("About"),
@@ -233,8 +242,8 @@ ui <- navbarPage("Pitch Sequencing",
                                  href = "https://github.com/tjhuffman4246/final_project",
                                  target = "_blank"))
                             )
-                          )
-                 )
+                            )
+                            )
 
 server <- function(input, output) {
   
@@ -260,7 +269,7 @@ server <- function(input, output) {
     
     pitches_app %>% 
       filter(!!sym(paste0((merged %>% filter(name == input$player_name) %>% select(player_type) %>% pull()), 
-                                 "_name")) == input$player_name,
+                          "_name")) == input$player_name,
              !is.na(pitch_seq)) %>% 
       group_by(pitch_seq) %>% 
       summarize(pct = n() / numseq) %>% 
@@ -270,7 +279,7 @@ server <- function(input, output) {
       xlab("Pitch Sequence") +
       ylab("Fraction of All Sequences") +
       labs(title = title_text,
-           subtitle = "Over All Multi-Pitch Plate Appearances Since 2015",
+           subtitle = "Over a Sample of Multi-Pitch Plate Appearances Since 2015",
            caption = "Data via Baseball Savant") +
       theme_classic() +
       theme(legend.position = "none")
