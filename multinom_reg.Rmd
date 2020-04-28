@@ -67,6 +67,10 @@ pitches %<>%
                                  is.na(pitch_type) | 
                                  is.na(lag(pitch_type))),
                              release_speed - lag(release_speed), NA),
+         spin_rate_diff = ifelse(!(pitch_number == 1 | 
+                                     is.na(release_spin_rate) | 
+                                     is.na(lag(release_spin_rate))),
+                                 release_spin_rate - lag(release_spin_rate), NA),
          loc_diff_x = ifelse(!(pitch_number == 1 | 
                                  is.na(pitch_type) | 
                                  is.na(lag(pitch_type))),
@@ -101,13 +105,9 @@ pitches %<>%
          stand = as_factor(stand),
          p_throws = as_factor(p_throws),
          pitch_seq = as_factor(pitch_seq),
-         pitch_type = as_factor(pitch_type))
-
-write_rds(filter(pitches, game_year %in% c(2015, 2016, 2017)),
-          "shiny_initial/pitches_early.rds")
-
-write_rds(filter(pitches, game_year %in% c(2018, 2019)),
-          "shiny_initial/pitches_late.rds")
+         pitch_seq = fct_lump(pitch_seq, prop = .02),
+         pitch_type = as_factor(pitch_type),
+         pitch_type = fct_lump(pitch_seq, prop = .02))
 
 # we do more factor work with the description of different events
 # grouping into ball, called strike, swinging strike, foul, and in play
@@ -197,9 +197,43 @@ rf_spec <- rand_forest() %>%
   set_engine("randomForest") %>%
   set_mode("classification") 
 
+pitches_model <- pitches %>% 
+  filter(!is.na(release_speed & pfx_x & pfx_z & plate_x & plate_z &
+                  speed_diff & loc_diff_x & loc_diff_z & spin_rate_diff))
+
 ```
 
-Now that we've set ourselves up with this model, let's start our process of analysis. First, we'll split the data into train and test sets.
+Now that we've set ourselves up with this model, let's start our process of analysis. The below code gives overall predictions; below, we split into train/test for actual analysis.
+
+```{r run_models}
+
+# more PPBDS code
+# cross-validation w/ RF took an incredible amount of time
+# and data is big enough that CV isn't as important
+
+seq_form_fit <- fit(multinom_spec, seq_form, data = pitches_model)
+pitch_form_fit <- fit(multinom_spec, pitch_form, data = pitches_model)
+context_form_fit <- fit(multinom_spec, pitch_form, data = pitches_model)
+
+pitch_preds <- pitches_model %>%
+  select(description) %>% 
+  mutate(sequence = predict(seq_form_fit, new_data = pitches_model) %>% 
+           pull(.pred_class),
+         pitch = predict(pitch_form_fit, new_data = pitches_model)  %>% 
+           pull(.pred_class),
+         context = predict(context_form_fit, new_data = pitches_model)  %>% 
+           pull(.pred_class)) %>% 
+  na.omit
+
+write_rds(pitch_preds, "shiny_initial/model_preds.rds")
+
+accuracy <- tibble(sequence = mean(pitch_preds$sequence == pitch_preds$description),
+                   pitch = mean(pitch_preds$pitch == pitch_preds$description),
+                   context = mean(pitch_preds$context == pitch_preds$description))
+
+write_rds(accuracy, "shiny_initial/accuracy.rds")
+
+```
 
 ```{r train_test}
 
