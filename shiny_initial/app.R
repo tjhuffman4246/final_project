@@ -1,6 +1,7 @@
 library(shiny)
-library(DT)
 library(tidyverse)
+
+# combines 
 
 pitches_app <- readRDS("pitches_early.rds") %>% 
   bind_rows(readRDS("pitches_late.rds"))
@@ -50,8 +51,9 @@ ui <- navbarPage("Final Project",
                             p("Using data from Baseball Savant, I set out to explore what sequencing in
                               MLB looks like, how it's changed over time, and whether it has significant
                               predictive on plate appearance outcomes beyond what one might expect. One
-                              can play around with this modeling aspect in the Explore page and read more
-                              about it in the Model section."
+                              can read more about this in the Model section, while the Explore tab gives a
+                              glimpse of what sequences different players have used (if they're pitchers) or
+                              experienced (as hitters)."
                             ), 
                             p("To set the stage, I'll quickly run through some descriptive analysis of the
                               data. The bar chart below shows the most commonly used sequences in the MLB
@@ -144,8 +146,33 @@ ui <- navbarPage("Final Project",
                               for balls and strikes than are hit into play, this suggests pitches hit into
                               play aren't substantially different from those that aren't; it's just a matter of
                               whether the batter chooses to swing or not. Let's look at how accurate these
-                              models are:"),
-                            tableOutput("acc_standard")
+                              models are via the fraction of pitch outcomes correctly predicted:"),
+                            tableOutput("acc_standard"),
+                            p("Woof. These models are only right about half the time! To be fair, this is 
+                              better than picking completely randomly - that would only succeed about a third
+                              of the time - but this supports the previous theory that hitters throw a massive
+                              wrench into our prediction abilities! But what if we altered the goals of the
+                              model?"),
+                            p("Let's make an assumption (ignoring every dad's favorite pun about assumptions 
+                              in the process) that if a ball is hit into play, we can reasonably expect that 
+                              it was thrown in the strike zone. This won't always be true, but more often than
+                              not it most likely will be. So what if instead of predicting three outcomes, we
+                              just tried to predict two - ball or strike? Let's turn any pitch where the ball
+                              was hit into play into an automatic strike and check out what our predictions
+                              would look like in that situation:"),
+                            tableOutput("preds_simplified"),
+                            p("This looks a bit more realistic. How does our accuracy look like in this 
+                              situation?"),
+                            tableOutput("acc_simplified"),
+                            p("Alright! This looks better. It's still not great - a more complex model would
+                              likely have much higher accuracy - but as a first pass with a relatively
+                              simplified model, this is a step in the right direction. Analyzing these
+                              results, we see that sequencing information alone is only slightly worse than
+                              more complex models accounting for context and pitch characteristics; again, a
+                              model with more computational complexity could give a better glimpse into what
+                              effects sequencing has, but from this model it does seem like there's a
+                              significant connection between a pitch's characteristics relative to the previous
+                              one and the outcome of that pitch.")
                           )
                  ),
                  
@@ -251,6 +278,14 @@ server <- function(input, output) {
   
   output$acc_standard <- renderTable({
     accuracy_standard
+  })
+  
+  output$preds_simplified <- renderTable({
+    sample_n(predictions_simplified, 8)
+  })
+  
+  output$acc_simplified <- renderTable({
+    accuracy_simplified
   })
   
 }
