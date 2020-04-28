@@ -199,14 +199,15 @@ server <- function(input, output) {
       group_by(pitch_seq) %>% 
       summarize(pct = n() / numseq) %>% 
       slice(1:7) %>% 
-      ggplot(aes(x = pitch_seq, y = pct, color = pitch_seq)) +
+      ggplot(aes(x = pitch_seq, y = pct, fill = pitch_seq)) +
       geom_bar(stat = "identity") +
       xlab("Pitch Sequence") +
       ylab("Fraction of All Sequences") +
       labs(title = title_text,
            subtitle = "Over All Multi-Pitch Plate Appearances Since 2015",
            caption = "Data via Baseball Savant") +
-      theme_classic()
+      theme_classic() +
+      theme(legend.position = "none")
   })
   
 }
