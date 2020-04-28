@@ -41,7 +41,7 @@ pitches %<>% mutate(pitch_seq = ifelse(!(pitch_number == 1 |
 
 # adds in batter names, manually inputting unknown players
 
-players <- read_csv("players.csv", col_types = cols()) %>% 
+players <- read_csv("data/players.csv", col_types = cols()) %>% 
   select(mlb_id, mlb_name)
 
 pitches %<>% 

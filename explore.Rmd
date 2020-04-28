@@ -179,7 +179,7 @@ ggsave("shiny_initial/topsequences.png")
 # downloaded csv from https://www.smartfantasybaseball.com/tools/
 # contains player info along with their MLB identification numbers
 
-players <- read_csv("players.csv", col_types = cols()) %>% 
+players <- read_csv("data/players.csv", col_types = cols()) %>% 
   select(mlb_id, mlb_name)
 
 # let's see if we can join this to our pitch sample dataset to get batter names
