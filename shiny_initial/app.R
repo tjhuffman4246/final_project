@@ -141,6 +141,17 @@ ui <- navbarPage("Pitch Sequencing",
                             )
                           ),
                           mainPanel(
+                            p("Select any player who's appeared in the MLB since 2015, and the below plot will give
+                              the frequency of different pitch sequences thrown or faced over a representative
+                              sample of that time period. Worth noting is that because of the variety of pitches
+                              thrown by different pitchers, the top sequences faced by hitters tend to occur less
+                              frequently than those thrown by pitchers, and even pitchers have a wide variety of
+                              sequences availble to them. For example, if a pitcher throws five different pitches,
+                              this would give them 25 unique sequences from which to choose."),
+                            p("We can still have unique results, even for similar pitchers. Justin Verlander and 
+                              Cole Hamels are two of the most prolific pitchers of the past fifteen years, and their
+                              sequence distributions are still wildly different. Use the menu to the left to take a
+                              look!"),
                             plotOutput("seq_distr_plot")
                           )),
                  
@@ -171,7 +182,7 @@ ui <- navbarPage("Pitch Sequencing",
                               ),
                             p('Below is a sample of some of the predictions from this model, where
                               "description" is the event that occurred, and the other columns are the
-                              predictions for each model:'
+                              predictions for each model, given in the order listed above:'
                               ),
                             tableOutput("preds_standard"),
                             p("As you might notice, it seems as though each model is just predicting a ball or
